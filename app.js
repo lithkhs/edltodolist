@@ -702,61 +702,85 @@ function getFilteredTasks(ignoreMetricFilter = false) {
 }
 
 function renderTeamProgress() {
-    const listOff = document.getElementById('progress-list-off');
-    const listElec = document.getElementById('progress-list-elec');
-    const listSafe = document.getElementById('progress-list-safe');
-    
-    if (listOff) listOff.innerHTML = '';
-    listElec.innerHTML = '';
-    listSafe.innerHTML = '';
+    const container = document.getElementById('dashboard-progress-groups');
+    if (!container) return;
+    container.innerHTML = '';
 
-    members.forEach(member => {
-        // Get tasks assigned to this member
-        const memberTasks = tasks.filter(t => t.assigneeId === member.id);
-        const total = memberTasks.length;
-        const done = memberTasks.filter(t => t.status === 'done').length;
-        
-        const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+    // Render group sections for each department dynamically!
+    Object.keys(DEPARTMENTS).forEach(deptKey => {
+        const deptId = parseInt(deptKey);
+        const deptName = DEPARTMENTS[deptId];
+        const deptMembers = members.filter(m => m.deptId === deptId);
 
-        const progressItem = document.createElement('div');
-        progressItem.className = `progress-item dept-${member.deptId}-item`;
+        // Pick color/icon
+        let iconClass = 'fa-building';
+        let colorClass = '#0ea5e9';
+        let customClass = '';
+        if (deptName.includes('ໄຟຟ້າ')) { iconClass = 'fa-bolt'; colorClass = '#eab308'; customClass = 'electrical-color'; }
+        else if (deptName.includes('ຄວາມປອດໄພ')) { iconClass = 'fa-shield-halved'; colorClass = '#10b981'; customClass = 'safety-color'; }
+
+        const section = document.createElement('div');
+        section.className = 'progress-section';
         
-        // Show edit/delete options if logged-in user is a supervisor (User Management)
+        // Show/hide add button based on role
         const isSupervisor = isUserManagement(currentUser);
-        let actionMarkup = '';
-        if (isSupervisor) {
-            // Check department admin boundary: dept admin can only edit/delete members of their own department
-            const canManageThisMember = !isUserDeptAdmin(currentUser) || currentUser.deptId === member.deptId;
-            if (canManageThisMember) {
-                actionMarkup = `
-                    <span class="member-actions-hover" style="display: inline-flex; gap: 6px; margin-left: 8px; align-items: center; opacity: 0.8;">
-                        <button type="button" class="member-action-btn edit-member-btn" onclick="openEditMemberFromDashboard('${member.id}')" title="ແກ້ໄຂສະມາຊິກ" style="border: none; background: transparent; cursor: pointer; color: #3b82f6; font-size: 0.8rem; padding: 2px;"><i class="fa-solid fa-pen"></i></button>
-                        <button type="button" class="member-action-btn delete-member-btn" onclick="openDeleteMemberFromDashboard('${member.id}')" title="ລຶບສະມາຊິກ" style="border: none; background: transparent; cursor: pointer; color: #ef4444; font-size: 0.8rem; padding: 2px;"><i class="fa-solid fa-trash-can"></i></button>
-                    </span>
-                `;
-            }
-        }
+        const showAddBtn = isSupervisor && (!isUserDeptAdmin(currentUser) || currentUser.deptId === deptId);
+        const addBtnMarkup = showAddBtn 
+            ? `<button type="button" class="add-member-btn" onclick="openAddMemberForDept(${deptId})" style="margin-left: auto; border: 1px solid ${colorClass}40; background: ${colorClass}10; color: ${colorClass}; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 500;"><i class="fa-solid fa-user-plus"></i> ເພີ່ມ</button>`
+            : '';
 
-        progressItem.innerHTML = `
-            <div class="progress-info" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <span class="m-name-tag" style="display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-                    <span>${member.name} <span class="m-stats-tag">(${member.role})</span></span>
-                    ${actionMarkup}
-                </span>
-                <span class="pct" style="flex-shrink: 0;">${done}/${total} ວຽກ (${pct}%)</span>
-            </div>
-            <div class="progress-track">
-                <div class="progress-fill" style="width: ${pct}%"></div>
-            </div>
+        section.innerHTML = `
+            <h3 class="${customClass}" style="color: ${colorClass}; display: flex; align-items: center; width: 100%;">
+                <span><i class="fa-solid ${iconClass}"></i> ${deptName}</span>
+                ${addBtnMarkup}
+            </h3>
+            <div class="progress-bar-list" id="progress-list-${deptId}"></div>
         `;
 
-        if (member.deptId === 3 && listOff) {
-            listOff.appendChild(progressItem);
-        } else if (member.deptId === 1) {
-            listElec.appendChild(progressItem);
+        const listDiv = section.querySelector('.progress-bar-list');
+
+        if (deptMembers.length === 0) {
+            listDiv.innerHTML = '<p class="empty-text" style="font-size: 0.8rem; color: var(--text-muted); font-style: italic; padding: 10px 0;">ບໍ່ມີສະມາຊິກໃນໜ່ວຍງານນີ້</p>';
         } else {
-            listSafe.appendChild(progressItem);
+            deptMembers.forEach(member => {
+                const memberTasks = tasks.filter(t => t.assigneeId === member.id);
+                const total = memberTasks.length;
+                const done = memberTasks.filter(t => t.status === 'done').length;
+                const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+
+                const progressItem = document.createElement('div');
+                progressItem.className = `progress-item dept-${member.deptId}-item`;
+                
+                let actionMarkup = '';
+                if (isSupervisor) {
+                    const canManageThisMember = !isUserDeptAdmin(currentUser) || currentUser.deptId === member.deptId;
+                    if (canManageThisMember) {
+                        actionMarkup = `
+                            <span class="member-actions-hover" style="display: inline-flex; gap: 6px; margin-left: 8px; align-items: center; opacity: 0.8;">
+                                <button type="button" class="member-action-btn edit-member-btn" onclick="openEditMemberFromDashboard('${member.id}')" title="ແກ້ໄຂສະມາຊິກ" style="border: none; background: transparent; cursor: pointer; color: #3b82f6; font-size: 0.8rem; padding: 2px;"><i class="fa-solid fa-pen"></i></button>
+                                <button type="button" class="member-action-btn delete-member-btn" onclick="openDeleteMemberFromDashboard('${member.id}')" title="ລຶບສະມາຊິກ" style="border: none; background: transparent; cursor: pointer; color: #ef4444; font-size: 0.8rem; padding: 2px;"><i class="fa-solid fa-trash-can"></i></button>
+                            </span>
+                        `;
+                    }
+                }
+
+                progressItem.innerHTML = `
+                    <div class="progress-info" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <span class="m-name-tag" style="display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                            <span>${member.name} <span class="m-stats-tag">(${member.role})</span></span>
+                            ${actionMarkup}
+                        </span>
+                        <span class="pct" style="flex-shrink: 0;">${done}/${total} ວຽກ (${pct}%)</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" style="width: ${pct}%"></div>
+                    </div>
+                `;
+                listDiv.appendChild(progressItem);
+            });
         }
+
+        container.appendChild(section);
     });
 }
 
@@ -1907,8 +1931,7 @@ document.getElementById('btn-manage-team-login').addEventListener('click', () =>
 });
 
 function openTeamManagementModal() {
-    resetMemberForm();
-    renderTeamManagementList();
+    switchModalTab('members');
 
     // Lock department selection field for department admins
     const deptSelect = document.getElementById('member-dept-input');
