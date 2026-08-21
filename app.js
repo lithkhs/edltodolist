@@ -2,7 +2,7 @@
 // APPLICATION STATE & DATA CONSTANTS
 // ==========================================================================
 
-const DEPARTMENTS = {
+let DEPARTMENTS = JSON.parse(localStorage.getItem('edl_departments')) || {
     1: "ໜ່ວຍງານເຕັກນິກ ແລະ ວາງແຜນລະບົບໄຟຟ້າ",
     2: "ໜ່ວຍງານເຕັກນິກຄວາມປອດໄພ",
     3: "ຫ້ອງການ / ບໍລິຫານ"
@@ -212,7 +212,14 @@ async function loadState() {
     try {
         const storedMembers = localStorage.getItem('edl_members');
         const storedTasks = localStorage.getItem('edl_tasks');
+        const storedDepts = localStorage.getItem('edl_departments');
         
+        if (storedDepts) {
+            DEPARTMENTS = JSON.parse(storedDepts);
+        } else {
+            localStorage.setItem('edl_departments', JSON.stringify(DEPARTMENTS));
+        }
+
         if (storedMembers) {
             members = JSON.parse(storedMembers);
             DEFAULT_MEMBERS.forEach(defaultMem => {
@@ -243,16 +250,64 @@ async function saveState() {
     try {
         localStorage.setItem('edl_members', JSON.stringify(members));
         localStorage.setItem('edl_tasks', JSON.stringify(tasks));
+        localStorage.setItem('edl_departments', JSON.stringify(DEPARTMENTS));
         
         if (useApiMode) {
             await fetch('/api/sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ members, tasks })
+                body: JSON.stringify({ members, tasks, departments: DEPARTMENTS })
             });
         }
     } catch (e) {
         console.error("Error saving state", e);
+    }
+}
+
+// Populate all select inputs with dynamic departments
+function updateAllDeptDropdowns() {
+    const filterDept = document.getElementById('filter-dept');
+    const taskDept = document.getElementById('task-dept-input');
+    const memberDept = document.getElementById('member-dept-input');
+
+    if (!filterDept) return;
+    const deptKeys = Object.keys(DEPARTMENTS);
+
+    // 1. Dashboard Filter Dropdown
+    const savedFilter = filterDept.value || "all";
+    filterDept.innerHTML = '<option value="all">ທັງໝົດ</option>';
+    deptKeys.forEach(key => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.innerText = DEPARTMENTS[key];
+        if (key === savedFilter) opt.selected = true;
+        filterDept.appendChild(opt);
+    });
+
+    // 2. Task Form Dropdown
+    if (taskDept) {
+        const savedTask = taskDept.value;
+        taskDept.innerHTML = '';
+        deptKeys.forEach(key => {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.innerText = DEPARTMENTS[key];
+            if (key === savedTask) opt.selected = true;
+            taskDept.appendChild(opt);
+        });
+    }
+
+    // 3. Member Form Dropdown
+    if (memberDept) {
+        const savedMember = memberDept.value;
+        memberDept.innerHTML = '';
+        deptKeys.forEach(key => {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.innerText = DEPARTMENTS[key];
+            if (key === savedMember) opt.selected = true;
+            memberDept.appendChild(opt);
+        });
     }
 }
 
@@ -305,6 +360,7 @@ function dismissToast(toast) {
 
 async function initApp() {
     await loadState();
+    updateAllDeptDropdowns();
     setupGlobalEventListeners();
     
     // Check for saved session
@@ -1867,65 +1923,49 @@ function openTeamManagementModal() {
 }
 
 function renderTeamManagementList() {
-    const mgmtListOff = document.getElementById('mgmt-members-list-off');
-    const mgmtListElec = document.getElementById('mgmt-members-list-elec');
-    const mgmtListSafe = document.getElementById('mgmt-members-list-safe');
-    
-    if (mgmtListOff) mgmtListOff.innerHTML = '';
-    mgmtListElec.innerHTML = '';
-    mgmtListSafe.innerHTML = '';
+    const listContainer = document.getElementById('member-scroll-list-grouped');
+    if (!listContainer) return;
+    listContainer.innerHTML = '';
 
     document.getElementById('members-count').innerText = members.length;
 
-    const dept3Members = members.filter(m => m.deptId === 3);
-    const dept1Members = members.filter(m => m.deptId === 1);
-    const dept2Members = members.filter(m => m.deptId === 2);
+    // Get all active departments
+    Object.keys(DEPARTMENTS).forEach(deptKey => {
+        const deptId = parseInt(deptKey);
+        
+        // If department admin, only show members of their own department
+        if (isUserDeptAdmin(currentUser) && currentUser.deptId !== deptId) {
+            return;
+        }
 
-    // Render office team members
-    if (mgmtListOff) {
-        if (dept3Members.length === 0) {
-            mgmtListOff.innerHTML = '<p class="empty-text">ບໍ່ມີສະມາຊິກ</p>';
+        const deptName = DEPARTMENTS[deptId];
+        const deptMembers = members.filter(m => m.deptId === deptId);
+
+        const section = document.createElement('div');
+        section.className = 'dept-list-section';
+        
+        // Pick icon/color based on department name
+        let iconClass = 'fa-building';
+        let colorClass = '#0ea5e9';
+        if (deptName.includes('ໄຟຟ້າ')) { iconClass = 'fa-bolt'; colorClass = '#eab308'; }
+        else if (deptName.includes('ຄວາມປອດໄພ')) { iconClass = 'fa-shield-halved'; colorClass = '#10b981'; }
+
+        section.innerHTML = `
+            <h4 style="color: ${colorClass}; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; font-size: 0.85rem;"><i class="fa-solid ${iconClass}"></i> ${deptName}</h4>
+            <div class="member-cards-list" id="mgmt-members-list-${deptId}" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;"></div>
+        `;
+
+        const cardsList = section.querySelector(`.member-cards-list`);
+        if (deptMembers.length === 0) {
+            cardsList.innerHTML = '<p class="empty-text" style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">ບໍ່ມີສະມາຊິກ</p>';
         } else {
-            dept3Members.forEach(member => {
-                const row = createMemberRow(member);
-                mgmtListOff.appendChild(row);
+            deptMembers.forEach(member => {
+                const card = createMemberRow(member);
+                cardsList.appendChild(card);
             });
         }
-    }
-
-    // Render electrical team members
-    if (dept1Members.length === 0) {
-        mgmtListElec.innerHTML = '<p class="empty-text">ບໍ່ມີສະມາຊິກ</p>';
-    } else {
-        dept1Members.forEach(member => {
-            const row = createMemberRow(member);
-            mgmtListElec.appendChild(row);
-        });
-    }
-
-    // Render safety team members
-    if (dept2Members.length === 0) {
-        mgmtListSafe.innerHTML = '<p class="empty-text">ບໍ່ມີສະມາຊິກ</p>';
-    } else {
-        dept2Members.forEach(member => {
-            const row = createMemberRow(member);
-            mgmtListSafe.appendChild(row);
-        });
-    }
-
-    // Restrict visible list sections based on role
-    const sections = document.querySelectorAll('.dept-list-section');
-    if (sections.length >= 3) {
-        if (isUserDeptAdmin(currentUser)) {
-            sections[0].style.display = 'none'; // Office section
-            sections[1].style.display = currentUser.deptId === 1 ? 'block' : 'none'; // Elec section
-            sections[2].style.display = currentUser.deptId === 2 ? 'block' : 'none'; // Safe section
-        } else {
-            sections[0].style.display = 'block';
-            sections[1].style.display = 'block';
-            sections[2].style.display = 'block';
-        }
-    }
+        listContainer.appendChild(section);
+    });
 }
 
 function createMemberRow(member) {
@@ -1999,6 +2039,190 @@ document.getElementById('form-member').addEventListener('submit', (e) => {
     saveState();
     resetMemberForm();
     renderTeamManagementList();
+    renderTeamProgress();
+});
+
+// Switch between Members and Departments tab inside modal-team
+window.switchModalTab = function(tabName) {
+    const btnMembers = document.getElementById('tab-btn-members');
+    const btnDepts = document.getElementById('tab-btn-depts');
+    const panelMembers = document.getElementById('modal-tab-content-members');
+    const panelDepts = document.getElementById('modal-tab-content-depts');
+
+    if (!btnMembers || !btnDepts) return;
+
+    if (tabName === 'members') {
+        btnMembers.classList.add('active');
+        btnMembers.style.color = 'var(--color-indigo)';
+        btnMembers.style.borderBottomColor = 'var(--color-indigo)';
+        btnMembers.style.fontWeight = '600';
+
+        btnDepts.classList.remove('active');
+        btnDepts.style.color = 'var(--text-muted)';
+        btnDepts.style.borderBottomColor = 'transparent';
+        btnDepts.style.fontWeight = '500';
+
+        panelMembers.classList.add('active');
+        panelMembers.classList.remove('hidden');
+        panelDepts.classList.add('hidden');
+        panelDepts.classList.remove('active');
+        
+        renderTeamManagementList();
+    } else {
+        btnDepts.classList.add('active');
+        btnDepts.style.color = 'var(--color-indigo)';
+        btnDepts.style.borderBottomColor = 'var(--color-indigo)';
+        btnDepts.style.fontWeight = '600';
+
+        btnMembers.classList.remove('active');
+        btnMembers.style.color = 'var(--text-muted)';
+        btnMembers.style.borderBottomColor = 'transparent';
+        btnMembers.style.fontWeight = '500';
+
+        panelDepts.classList.add('active');
+        panelDepts.classList.remove('hidden');
+        panelMembers.classList.add('hidden');
+        panelMembers.classList.remove('active');
+
+        renderDeptManagementList();
+        resetDeptForm();
+    }
+};
+
+function renderDeptManagementList() {
+    const listContainer = document.getElementById('depts-scroll-list');
+    if (!listContainer) return;
+    listContainer.innerHTML = '';
+
+    const deptKeys = Object.keys(DEPARTMENTS);
+    document.getElementById('depts-count').innerText = deptKeys.length;
+
+    deptKeys.forEach(deptKey => {
+        const deptId = parseInt(deptKey);
+        const deptName = DEPARTMENTS[deptId];
+        
+        const row = document.createElement('div');
+        row.className = 'member-item-row';
+        row.style.padding = '8px 12px';
+        
+        // Count how many members are in this department
+        const memberCount = members.filter(m => m.deptId === deptId).length;
+        
+        // Show edit/delete options if logged-in user is a supervisor (User Management)
+        const isSupervisor = isUserManagement(currentUser);
+        let actionMarkup = '';
+        if (isSupervisor) {
+            const canManage = !isUserDeptAdmin(currentUser) || currentUser.deptId === deptId;
+            if (canManage) {
+                actionMarkup = `
+                    <div class="member-item-actions">
+                        <button type="button" class="icon-btn edit-action" title="ແກ້ໄຂ" onclick="editDept('${deptId}')">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button type="button" class="icon-btn delete-action" title="ລຶບ" onclick="deleteDeptConfirm('${deptId}')">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        row.innerHTML = `
+            <div class="member-item-left">
+                <div class="avatar-sm" style="background: rgba(15,23,42,0.05); color: var(--text-primary);"><i class="fa-solid fa-building"></i></div>
+                <div class="member-item-details">
+                    <span class="name">${deptName}</span>
+                    <span class="role" style="font-size: 0.72rem; color: var(--text-muted);">${memberCount} ພະນັກງານ</span>
+                </div>
+            </div>
+            ${actionMarkup}
+        `;
+        listContainer.appendChild(row);
+    });
+}
+
+window.editDept = function(deptId) {
+    const deptName = DEPARTMENTS[deptId];
+    if (!deptName) return;
+
+    if (isUserDeptAdmin(currentUser) && currentUser.deptId !== parseInt(deptId)) {
+        showToast("ທ່ານບໍ່ມີສິດແກ້ໄຂຫ້ອງການ/ໜ່ວຍງານອື່ນ!", "error");
+        return;
+    }
+
+    document.getElementById('dept-id').value = deptId;
+    document.getElementById('dept-name-input').value = deptName;
+    document.getElementById('dept-form-title').innerText = 'ແກ້ໄຂໜ່ວຍງານ';
+    document.getElementById('btn-save-dept').innerText = 'ແກ້ໄຂຂໍ້ມູນ';
+    document.getElementById('btn-reset-dept-form').classList.remove('hidden');
+};
+
+window.deleteDeptConfirm = function(deptId) {
+    const deptName = DEPARTMENTS[deptId];
+    if (!deptName) return;
+
+    if (isUserDeptAdmin(currentUser) && currentUser.deptId !== parseInt(deptId)) {
+        showToast("ທ່ານບໍ່ມີສິດລຶບຫ້ອງການ/ໜ່ວຍງານອື່ນ!", "error");
+        return;
+    }
+
+    // Check if there are members in this department
+    const memberCount = members.filter(m => m.deptId === parseInt(deptId)).length;
+    if (memberCount > 0) {
+        showToast("ບໍ່ສາມາດລຶບໜ່ວຍງານນີ້ໄດ້ ເນື່ອງຈາກຍັງມີພະນັກງານສັງກັດຢູ່!", "error");
+        return;
+    }
+
+    if (confirm(`ທ່ານຕ້ອງການລຶບຫ້ອງການ/ໜ່ວຍງານ "${deptName}" ແທ້ ຫຼື ບໍ່?`)) {
+        delete DEPARTMENTS[deptId];
+        saveState();
+        renderDeptManagementList();
+        renderTeamProgress();
+        updateAllDeptDropdowns();
+        showToast("ລຶບຫ້ອງການ/ໜ່ວຍງານສໍາເລັດ", 'success');
+    }
+};
+
+window.resetDeptForm = function() {
+    document.getElementById('dept-id').value = '';
+    document.getElementById('dept-name-input').value = '';
+    document.getElementById('dept-form-title').innerText = 'ເພີ່ມໜ່ວຍງານໃໝ່';
+    document.getElementById('btn-save-dept').innerText = 'ບັນທຶກໜ່ວຍງານ';
+    document.getElementById('btn-reset-dept-form').classList.add('hidden');
+};
+
+// Handle Department Form Submit
+document.getElementById('form-dept').addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('dept-id').value;
+    const name = document.getElementById('dept-name-input').value.trim();
+    
+    if (id) {
+        // Edit mode
+        if (isUserDeptAdmin(currentUser) && currentUser.deptId !== parseInt(id)) {
+            showToast("ທ່ານບໍ່ມີສິດແກ້ໄຂຫ້ອງການ/ໜ່ວຍງານອື່ນ!", "error");
+            return;
+        }
+        DEPARTMENTS[id] = name;
+        showToast("ແກ້ໄຂຂໍ້ມູນຫ້ອງການ/ໜ່ວຍງານສໍາເລັດ", 'success');
+    } else {
+        // Add mode
+        if (isUserDeptAdmin(currentUser)) {
+            showToast("ຫົວໜ້າໜ່ວຍງານບໍ່ສາມາດເພີ່ມໜ່ວຍງານໃໝ່ໄດ້!", "error");
+            return;
+        }
+        // Generate new integer ID
+        const newId = Math.max(...Object.keys(DEPARTMENTS).map(Number), 0) + 1;
+        DEPARTMENTS[newId] = name;
+        showToast("ເພີ່ມຫ້ອງການ/ໜ່ວຍງານໃໝ່ສໍາເລັດ", 'success');
+    }
+
+    saveState();
+    resetDeptForm();
+    renderDeptManagementList();
+    renderTeamProgress();
+    updateAllDeptDropdowns();
 });
 
 window.editMember = function(memberId) {

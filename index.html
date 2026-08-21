@@ -141,39 +141,8 @@
                             ຄວາມຄືບໜ້າການເຮັດວຽກຂອງສະມາຊິກແຕ່ລະໜ່ວຍງານ
                         </h2>
                         
-                        <div class="progress-groups">
-                            <!-- Dept 3 Progress -->
-                            <div class="progress-section">
-                                <h3 style="color: #0ea5e9; display: flex; align-items: center; width: 100%;">
-                                    <span><i class="fa-solid fa-building"></i> ຫ້ອງການ / ບໍລິຫານ</span>
-                                    <button type="button" class="add-member-btn" onclick="openAddMemberForDept(3)" style="margin-left: auto; border: 1px solid rgba(14,165,233,0.2); background: rgba(14,165,233,0.06); color: #0ea5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 500;"><i class="fa-solid fa-user-plus"></i> ເພີ່ມ</button>
-                                </h3>
-                                <div id="progress-list-off" class="progress-bar-list">
-                                    <!-- Rendered dynamically -->
-                                </div>
-                            </div>
-
-                            <!-- Dept 1 Progress -->
-                            <div class="progress-section">
-                                <h3 class="electrical-color" style="display: flex; align-items: center; width: 100%;">
-                                    <span><i class="fa-solid fa-bolt"></i> ໜ່ວຍງານເຕັກນິກ ແລະ ວາງແຜນລະບົບໄຟຟ້າ</span>
-                                    <button type="button" class="add-member-btn" onclick="openAddMemberForDept(1)" style="margin-left: auto; border: 1px solid rgba(99,102,241,0.2); background: rgba(99,102,241,0.06); color: #818cf8; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 500;"><i class="fa-solid fa-user-plus"></i> ເພີ່ມ</button>
-                                </h3>
-                                <div id="progress-list-elec" class="progress-bar-list">
-                                    <!-- Rendered dynamically -->
-                                </div>
-                            </div>
-
-                            <!-- Dept 2 Progress -->
-                            <div class="progress-section">
-                                <h3 class="safety-color" style="display: flex; align-items: center; width: 100%;">
-                                    <span><i class="fa-solid fa-shield-halved"></i> ໜ່ວຍງານເຕັກນິກຄວາມປອດໄພ</span>
-                                    <button type="button" class="add-member-btn" onclick="openAddMemberForDept(2)" style="margin-left: auto; border: 1px solid rgba(16,185,129,0.2); background: rgba(16,185,129,0.06); color: #10b981; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 500;"><i class="fa-solid fa-user-plus"></i> ເພີ່ມ</button>
-                                </h3>
-                                <div id="progress-list-safe" class="progress-bar-list">
-                                    <!-- Rendered dynamically -->
-                                </div>
-                            </div>
+                        <div class="progress-groups" id="dashboard-progress-groups">
+                            <!-- Rendered dynamically in app.js -->
                         </div>
                     </div>
                 </div>
@@ -481,120 +450,146 @@
         </div>
     </div>
 
-    <!-- MODAL 3: TEAM MANAGEMENT (Add / Edit / Remove Members) -->
+    <!-- MODAL 3: TEAM MANAGEMENT (Add / Edit / Remove Members & Departments) -->
     <div id="modal-team" class="modal-backdrop">
         <div class="modal-card">
             <div class="modal-header">
-                <h2>ຈັດການສະມາຊິກທີມງານ</h2>
+                <h2>ຈັດການສະມາຊິກ & ຫ້ອງການ-ໜ່ວຍງານ</h2>
                 <button type="button" class="close-modal-btn" data-modal="modal-team">&times;</button>
             </div>
+
+            <!-- Tab switcher -->
+            <div class="modal-tabs" style="display: flex; border-bottom: 1px solid var(--glass-border); background: rgba(0,0,0,0.02); padding: 0 16px;">
+                <button type="button" class="modal-tab-btn active" id="tab-btn-members" onclick="switchModalTab('members')" style="padding: 12px 16px; border: none; background: transparent; color: var(--color-indigo); font-weight: 600; cursor: pointer; border-bottom: 2px solid var(--color-indigo); font-size: 0.88rem; outline: none;"><i class="fa-solid fa-users"></i> ຈັດການສະມາຊິກ</button>
+                <button type="button" class="modal-tab-btn" id="tab-btn-depts" onclick="switchModalTab('depts')" style="padding: 12px 16px; border: none; background: transparent; color: var(--text-muted); font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.88rem; outline: none;"><i class="fa-solid fa-building"></i> ຈັດການຫ້ອງການ-ໜ່ວຍງານ</button>
+            </div>
             
-            <div class="team-mgmt-layout">
-                <!-- Left: Form to Add/Edit Member -->
-                <div class="team-form-area">
-                    <h3 id="member-form-title">ເພີ່ມສະມາຊິກໃໝ່</h3>
-                    <form id="form-member" class="modal-form">
-                        <input type="hidden" id="member-id">
-                        
-                        <div class="form-group">
-                            <label for="member-emp-id-input" class="required-field">ລະຫັດພະນັກງານ (Employee ID)</label>
-                            <input type="text" id="member-emp-id-input" placeholder="ເຊັ່ນ: EMP-008..." required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="member-name-input" class="required-field">ຊື່ ແລະ ນາມສະກຸນ</label>
-                            <input type="text" id="member-name-input" placeholder="ຊື່ສະມາຊິກ..." required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="member-role-input" class="required-field">ຕໍາແໜ່ງ / ບົດບາດ</label>
-                            <input type="text" id="member-role-input" placeholder="ເຊັ່ນ: ວິສະວະກອນ, ຜູ້ກວດກາ..." required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="member-dept-input" class="required-field">ໜ່ວຍງານສັງກັດ</label>
-                            <select id="member-dept-input" required>
-                                <option value="1">ໜ່ວຍງານເຕັກນິກ ແລະ ວາງແຜນລະບົບໄຟຟ້າ</option>
-                                <option value="2">ໜ່ວຍງານເຕັກນິກຄວາມປອດໄພ</option>
-                                <option value="3">ຫ້ອງການ / ບໍລິຫານ</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="member-password-input" class="required-field">ລະຫັດຜ່ານ</label>
-                            <div class="password-input-wrapper">
-                                <input type="password" id="member-password-input" placeholder="ລະຫັດຜ່ານ..." value="1234" required style="width: 100%;">
-                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('member-password-input', this)">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
+            <!-- Tab 1 Content: Member Management -->
+            <div id="modal-tab-content-members" class="tab-content-panel active">
+                <div class="team-mgmt-layout">
+                    <!-- Left: Form to Add/Edit Member -->
+                    <div class="team-form-area">
+                        <h3 id="member-form-title">ເພີ່ມສະມາຊິກໃໝ່</h3>
+                        <form id="form-member" class="modal-form">
+                            <input type="hidden" id="member-id">
+                            
+                            <div class="form-group">
+                                <label for="member-emp-id-input" class="required-field">ລະຫັດພະນັກງານ (Employee ID)</label>
+                                <input type="text" id="member-emp-id-input" placeholder="ເຊັ່ນ: EMP-008..." required>
                             </div>
-                        </div>
 
-                        <div class="form-group">
-                            <label><i class="fa-solid fa-image"></i> ຮູບໂປຣໄຟລ໌ (Profile Picture)</label>
-                            <div style="display: flex; gap: 12px; align-items: center;">
-                                <div id="member-avatar-preview" class="avatar-sm" style="width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 1rem; border: 1px solid var(--glass-border); overflow: hidden;">
-                                    <!-- Image or Initials -->
+                            <div class="form-group">
+                                <label for="member-name-input" class="required-field">ຊື່ ແລະ ນາມສະກຸນ</label>
+                                <input type="text" id="member-name-input" placeholder="ຊື່ສະມາຊິກ..." required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="member-role-input" class="required-field">ຕໍາແໜ່ງ / ບົດບາດ</label>
+                                <input type="text" id="member-role-input" placeholder="ເຊັ່ນ: ວິສະວະກອນ, ຜູ້ກວດກາ..." required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="member-dept-input" class="required-field">ໜ່ວຍງານສັງກັດ</label>
+                                <select id="member-dept-input" required>
+                                    <!-- Rendered dynamically -->
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="member-password-input" class="required-field">ລະຫັດຜ່ານ</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="member-password-input" placeholder="ລະຫັດຜ່ານ..." value="1234" required style="width: 100%;">
+                                    <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('member-password-input', this)">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </button>
                                 </div>
-                                <input type="file" id="member-photo-input" accept="image/*" style="display: none;">
-                                <button type="button" class="secondary-btn" id="btn-trigger-member-photo" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-upload"></i> ອັບໂຫຼດຮູບ...</button>
-                                <button type="button" class="secondary-btn" id="btn-remove-member-photo" style="padding: 6px 12px; font-size: 0.8rem; display: none; color: var(--color-overdue); border-color: rgba(239, 68, 68, 0.2);"><i class="fa-solid fa-trash"></i> ລຶບ</button>
                             </div>
-                        </div>
 
-                        <div class="form-group">
-                            <label class="required-field">ເລືອກສີປະຈໍາຕົວ (Avatar Color)</label>
-                            <div class="color-picker-grid">
-                                <label class="color-radio" style="background-color: #6366f1;">
-                                    <input type="radio" name="avatar-color" value="#6366f1" checked>
-                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
-                                </label>
-                                <label class="color-radio" style="background-color: #0ea5e9;">
-                                    <input type="radio" name="avatar-color" value="#0ea5e9">
-                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
-                                </label>
-                                <label class="color-radio" style="background-color: #10b981;">
-                                    <input type="radio" name="avatar-color" value="#10b981">
-                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
-                                </label>
-                                <label class="color-radio" style="background-color: #f59e0b;">
-                                    <input type="radio" name="avatar-color" value="#f59e0b">
-                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
-                                </label>
-                                <label class="color-radio" style="background-color: #ec4899;">
-                                    <input type="radio" name="avatar-color" value="#ec4899">
-                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
-                                </label>
-                                <label class="color-radio" style="background-color: #8b5cf6;">
-                                    <input type="radio" name="avatar-color" value="#8b5cf6">
-                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
-                                </label>
+                            <div class="form-group">
+                                <label><i class="fa-solid fa-image"></i> ຮູບໂປຣໄຟລ໌ (Profile Picture)</label>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <div id="member-avatar-preview" class="avatar-sm" style="width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 1rem; border: 1px solid var(--glass-border); overflow: hidden;">
+                                        <!-- Image or Initials -->
+                                    </div>
+                                    <input type="file" id="member-photo-input" accept="image/*" style="display: none;">
+                                    <button type="button" class="secondary-btn" id="btn-trigger-member-photo" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-upload"></i> ອັບໂຫຼດຮູບ...</button>
+                                    <button type="button" class="secondary-btn" id="btn-remove-member-photo" style="padding: 6px 12px; font-size: 0.8rem; display: none; color: var(--color-overdue); border-color: rgba(239, 68, 68, 0.2);"><i class="fa-solid fa-trash"></i> ລຶບ</button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="form-actions-stacked">
-                            <button type="submit" id="btn-save-member" class="primary-btn block-btn">ບັນທຶກສະມາຊິກ</button>
-                            <button type="button" id="btn-reset-member-form" class="secondary-btn block-btn hidden">ຍົກເລີກການແກ້ໄຂ</button>
+                            <div class="form-group">
+                                <label class="required-field">ເລືອກສີປະຈໍາຕົວ (Avatar Color)</label>
+                                <div class="color-picker-grid">
+                                    <label class="color-radio" style="background-color: #6366f1;">
+                                        <input type="radio" name="avatar-color" value="#6366f1" checked>
+                                        <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                    </label>
+                                    <label class="color-radio" style="background-color: #0ea5e9;">
+                                        <input type="radio" name="avatar-color" value="#0ea5e9">
+                                        <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                    </label>
+                                    <label class="color-radio" style="background-color: #10b981;">
+                                        <input type="radio" name="avatar-color" value="#10b981">
+                                        <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                    </label>
+                                    <label class="color-radio" style="background-color: #f59e0b;">
+                                        <input type="radio" name="avatar-color" value="#f59e0b">
+                                        <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                    </label>
+                                    <label class="color-radio" style="background-color: #ec4899;">
+                                        <input type="radio" name="avatar-color" value="#ec4899">
+                                        <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                    </label>
+                                    <label class="color-radio" style="background-color: #8b5cf6;">
+                                        <input type="radio" name="avatar-color" value="#8b5cf6">
+                                        <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-actions-stacked">
+                                <button type="submit" id="btn-save-member" class="primary-btn block-btn">ບັນທຶກສະມາຊິກ</button>
+                                <button type="button" id="btn-reset-member-form" class="secondary-btn block-btn hidden">ຍົກເລີກການແກ້ໄຂ</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right: List of Existing Members -->
+                    <div class="team-list-area">
+                        <h3>ລາຍຊື່ສະມາຊິກທັງໝົດ (<span id="members-count">0</span>)</h3>
+                        <div class="members-scroll-list" id="member-scroll-list-grouped">
+                            <!-- Grouped by department dynamically -->
                         </div>
-                    </form>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Right: List of Existing Members -->
-                <div class="team-list-area">
-                    <h3>ລາຍຊື່ສະມາຊິກທັງໝົດ (<span id="members-count">0</span>)</h3>
-                    <div class="members-scroll-list">
-                        <!-- Grouped by department dynamically -->
-                        <div class="dept-list-section">
-                            <h4 style="color: #0ea5e9;"><i class="fa-solid fa-building"></i> ຫ້ອງການ / ບໍລິຫານ</h4>
-                            <div id="mgmt-members-list-off" class="member-cards-list"></div>
-                        </div>
-                        <div class="dept-list-section">
-                            <h4 class="electrical-color"><i class="fa-solid fa-bolt"></i> ເຕັກນິກ & ວາງແຜນໄຟຟ້າ</h4>
-                            <div id="mgmt-members-list-elec" class="member-cards-list"></div>
-                        </div>
-                        <div class="dept-list-section">
-                            <h4 class="safety-color"><i class="fa-solid fa-shield-halved"></i> ເຕັກນິກຄວາມປອດໄພ</h4>
-                            <div id="mgmt-members-list-safe" class="member-cards-list"></div>
+            <!-- Tab 2 Content: Department Management -->
+            <div id="modal-tab-content-depts" class="tab-content-panel hidden">
+                <div class="team-mgmt-layout">
+                    <!-- Left: Form to Add/Edit Dept -->
+                    <div class="team-form-area">
+                        <h3 id="dept-form-title">ເພີ່ມໜ່ວຍງານໃໝ່</h3>
+                        <form id="form-dept" class="modal-form">
+                            <input type="hidden" id="dept-id">
+                            
+                            <div class="form-group">
+                                <label for="dept-name-input" class="required-field">ຊື່ຫ້ອງການ / ໜ່ວຍງານ</label>
+                                <input type="text" id="dept-name-input" placeholder="ລະບຸຊື່ຫ້ອງການ ຫຼື ໜ່ວຍງານ..." required>
+                            </div>
+
+                            <div class="form-actions-stacked">
+                                <button type="submit" id="btn-save-dept" class="primary-btn block-btn">ບັນທຶກໜ່ວຍງານ</button>
+                                <button type="button" id="btn-reset-dept-form" class="secondary-btn block-btn hidden" onclick="resetDeptForm()">ຍົກເລີກການແກ້ໄຂ</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right: List of Existing Depts -->
+                    <div class="team-list-area">
+                        <h3>ລາຍຊື່ຫ້ອງການ / ໜ່ວຍງານທັງໝົດ (<span id="depts-count">0</span>)</h3>
+                        <div class="members-scroll-list" id="depts-scroll-list" style="display: flex; flex-direction: column; gap: 8px; padding: 10px 0;">
+                            <!-- Rendered dynamically -->
                         </div>
                     </div>
                 </div>
