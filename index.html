@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome for Premium Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=20260821_light">
+    <link rel="stylesheet" href="style.css?v=20260821_team_mgmt">
 </head>
 <body>
     <!-- Background Animated Blobs for Premium Glassmorphism Look -->
@@ -144,8 +144,9 @@
                         <div class="progress-groups">
                             <!-- Dept 3 Progress -->
                             <div class="progress-section">
-                                <h3 style="color: #0ea5e9;">
-                                    <i class="fa-solid fa-building"></i> ຫ້ອງການ / ບໍລິຫານ
+                                <h3 style="color: #0ea5e9; display: flex; align-items: center; width: 100%;">
+                                    <span><i class="fa-solid fa-building"></i> ຫ້ອງການ / ບໍລິຫານ</span>
+                                    <button type="button" class="add-member-btn" onclick="openAddMemberForDept(3)" style="margin-left: auto; border: 1px solid rgba(14,165,233,0.2); background: rgba(14,165,233,0.06); color: #0ea5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 500;"><i class="fa-solid fa-user-plus"></i> ເພີ່ມ</button>
                                 </h3>
                                 <div id="progress-list-off" class="progress-bar-list">
                                     <!-- Rendered dynamically -->
@@ -154,8 +155,9 @@
 
                             <!-- Dept 1 Progress -->
                             <div class="progress-section">
-                                <h3 class="electrical-color">
-                                    <i class="fa-solid fa-bolt"></i> ໜ່ວຍງານເຕັກນິກ ແລະ ວາງແຜນລະບົບໄຟຟ້າ
+                                <h3 class="electrical-color" style="display: flex; align-items: center; width: 100%;">
+                                    <span><i class="fa-solid fa-bolt"></i> ໜ່ວຍງານເຕັກນິກ ແລະ ວາງແຜນລະບົບໄຟຟ້າ</span>
+                                    <button type="button" class="add-member-btn" onclick="openAddMemberForDept(1)" style="margin-left: auto; border: 1px solid rgba(99,102,241,0.2); background: rgba(99,102,241,0.06); color: #818cf8; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 500;"><i class="fa-solid fa-user-plus"></i> ເພີ່ມ</button>
                                 </h3>
                                 <div id="progress-list-elec" class="progress-bar-list">
                                     <!-- Rendered dynamically -->
@@ -164,8 +166,9 @@
 
                             <!-- Dept 2 Progress -->
                             <div class="progress-section">
-                                <h3 class="safety-color">
-                                    <i class="fa-solid fa-shield-halved"></i> ໜ່ວຍງານເຕັກນິກຄວາມປອດໄພ
+                                <h3 class="safety-color" style="display: flex; align-items: center; width: 100%;">
+                                    <span><i class="fa-solid fa-shield-halved"></i> ໜ່ວຍງານເຕັກນິກຄວາມປອດໄພ</span>
+                                    <button type="button" class="add-member-btn" onclick="openAddMemberForDept(2)" style="margin-left: auto; border: 1px solid rgba(16,185,129,0.2); background: rgba(16,185,129,0.06); color: #10b981; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer; font-weight: 500;"><i class="fa-solid fa-user-plus"></i> ເພີ່ມ</button>
                                 </h3>
                                 <div id="progress-list-safe" class="progress-bar-list">
                                     <!-- Rendered dynamically -->

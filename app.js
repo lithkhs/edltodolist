@@ -664,10 +664,30 @@ function renderTeamProgress() {
 
         const progressItem = document.createElement('div');
         progressItem.className = `progress-item dept-${member.deptId}-item`;
+        
+        // Show edit/delete options if logged-in user is a supervisor (User Management)
+        const isSupervisor = isUserManagement(currentUser);
+        let actionMarkup = '';
+        if (isSupervisor) {
+            // Check department admin boundary: dept admin can only edit/delete members of their own department
+            const canManageThisMember = !isUserDeptAdmin(currentUser) || currentUser.deptId === member.deptId;
+            if (canManageThisMember) {
+                actionMarkup = `
+                    <span class="member-actions-hover" style="display: inline-flex; gap: 6px; margin-left: 8px; align-items: center; opacity: 0.8;">
+                        <button type="button" class="member-action-btn edit-member-btn" onclick="openEditMemberFromDashboard('${member.id}')" title="ແກ້ໄຂສະມາຊິກ" style="border: none; background: transparent; cursor: pointer; color: #3b82f6; font-size: 0.8rem; padding: 2px;"><i class="fa-solid fa-pen"></i></button>
+                        <button type="button" class="member-action-btn delete-member-btn" onclick="openDeleteMemberFromDashboard('${member.id}')" title="ລຶບສະມາຊິກ" style="border: none; background: transparent; cursor: pointer; color: #ef4444; font-size: 0.8rem; padding: 2px;"><i class="fa-solid fa-trash-can"></i></button>
+                    </span>
+                `;
+            }
+        }
+
         progressItem.innerHTML = `
-            <div class="progress-info">
-                <span class="m-name-tag">${member.name} <span class="m-stats-tag">(${member.role})</span></span>
-                <span class="pct">${done}/${total} ວຽກ (${pct}%)</span>
+            <div class="progress-info" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span class="m-name-tag" style="display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                    <span>${member.name} <span class="m-stats-tag">(${member.role})</span></span>
+                    ${actionMarkup}
+                </span>
+                <span class="pct" style="flex-shrink: 0;">${done}/${total} ວຽກ (${pct}%)</span>
             </div>
             <div class="progress-track">
                 <div class="progress-fill" style="width: ${pct}%"></div>
@@ -683,6 +703,27 @@ function renderTeamProgress() {
         }
     });
 }
+
+window.openAddMemberForDept = function(deptId) {
+    if (isUserDeptAdmin(currentUser) && currentUser.deptId !== deptId) {
+        showToast("ທ່ານບໍ່ມີສິດເພີ່ມສະມາຊິກເຂົ້າໜ່ວຍງານອື່ນ!", "error");
+        return;
+    }
+    openTeamManagementModal();
+    const deptSelect = document.getElementById('member-dept-input');
+    deptSelect.value = deptId.toString();
+    document.getElementById('member-emp-id-input').focus();
+};
+
+window.openEditMemberFromDashboard = function(memberId) {
+    openTeamManagementModal();
+    editMember(memberId);
+};
+
+window.openDeleteMemberFromDashboard = function(memberId) {
+    openTeamManagementModal();
+    deleteMemberConfirm(memberId);
+};
 
 function renderSupervisorTasksTable(filteredTasks) {
     const tbody = document.getElementById('supervisor-tasks-tbody');

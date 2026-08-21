@@ -1994,6 +1994,32 @@ body {
     display: none !important;
 }
 
+#supervisor-dashboard.member-view .add-member-btn {
+    display: none !important;
+}
+
+#supervisor-dashboard.member-view .member-actions-hover {
+    display: none !important;
+}
+
+.member-action-btn {
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.member-action-btn:hover {
+    transform: scale(1.2);
+    opacity: 1;
+}
+
+.add-member-btn {
+    transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.add-member-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
 /* ==========================================================================
    PASSWORD TOGGLE STYLING
    ========================================================================== */
