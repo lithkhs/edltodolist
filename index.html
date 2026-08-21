@@ -55,7 +55,11 @@
                     </button>
                 </form>
                 
-
+                <div style="text-align: center; margin-top: 16px;">
+                    <button type="button" id="btn-login-guide" class="text-link-btn" style="background: none; border: none; color: var(--color-indigo); cursor: pointer; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; text-decoration: underline; margin: 0 auto;">
+                        <i class="fa-solid fa-circle-question"></i> ຄູ່ມືການນຳໃຊ້ລະບົບ (User Guide)
+                    </button>
+                </div>
             </div>
         </div>
     </section>
@@ -82,6 +86,9 @@
                         <span id="user-dept-name">ໜ່ວຍງານ</span>
                     </div>
                 </div>
+                <button id="btn-user-guide" class="icon-btn-text" title="ຄູ່ມືການນຳໃຊ້ລະບົບ" style="margin-right: 8px; background: rgba(15, 23, 42, 0.02); border-color: var(--glass-border); color: var(--color-indigo);">
+                    <i class="fa-solid fa-circle-question"></i> <span>ຄູ່ມື</span>
+                </button>
                 <button id="btn-profile-settings" class="icon-btn-text" title="ຕັ້ງຄ່າຂໍ້ມູນສ່ວນຕົວ & ລະຫັດຜ່ານ" style="margin-right: 8px; background: rgba(15, 23, 42, 0.02); border-color: var(--glass-border);">
                     <i class="fa-solid fa-user-gear"></i> <span>...</span>
                 </button>
@@ -693,6 +700,262 @@
                     <button type="submit" class="primary-btn" style="background: var(--color-indigo);">ບັນທຶກການຕັ້ງຄ່າ</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- MODAL 6: USER GUIDE (System Instructions & Steps) -->
+    <div id="modal-guide" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 850px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; background: var(--bg-secondary); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-lg);">
+            <div class="modal-header" style="padding: 20px 24px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                <h2 style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 8px; margin: 0;">
+                    <i class="fa-solid fa-circle-question" style="color: var(--color-indigo); font-size: 1.3rem;"></i> 
+                    ຄູ່ມືການນຳໃຊ້ລະບົບຕິດຕາມວຽກງານທີມງານ (EDL Taskboard)
+                </h2>
+                <button type="button" class="close-modal-btn" data-modal="modal-guide" style="background: transparent; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            
+            <!-- Tab Switcher -->
+            <div class="modal-tabs" style="display: flex; border-bottom: 1px solid var(--glass-border); background: rgba(15, 23, 42, 0.01); padding: 0 16px; overflow-x: auto; white-space: nowrap; flex-shrink: 0; gap: 8px;">
+                <button type="button" class="modal-tab-btn active" id="tab-btn-guide-overview" onclick="switchGuideTab('overview')" style="padding: 12px 16px; border: none; background: transparent; color: var(--color-indigo); font-weight: 600; cursor: pointer; border-bottom: 2px solid var(--color-indigo); font-size: 0.88rem; outline: none; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-eye"></i> ພາບລວມ & ການເຂົ້າລະບົບ
+                </button>
+                <button type="button" class="modal-tab-btn" id="tab-btn-guide-supervisor" onclick="switchGuideTab('supervisor')" style="padding: 12px 16px; border: none; background: transparent; color: var(--text-muted); font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.88rem; outline: none; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-user-shield"></i> ສຳລັບຜູ້ບໍລິຫານ/ຫົວໜ້າ
+                </button>
+                <button type="button" class="modal-tab-btn" id="tab-btn-guide-member" onclick="switchGuideTab('member')" style="padding: 12px 16px; border: none; background: transparent; color: var(--text-muted); font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.88rem; outline: none; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-user-gear"></i> ສຳລັບສະມາຊິກທີມ
+                </button>
+                <button type="button" class="modal-tab-btn" id="tab-btn-guide-accounts" onclick="switchGuideTab('accounts')" style="padding: 12px 16px; border: none; background: transparent; color: var(--text-muted); font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.88rem; outline: none; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-users"></i> ບັນຊີທົດລອງ
+                </button>
+            </div>
+            
+            <!-- Modal Body Scroll Container -->
+            <div class="modal-body-scroll" style="flex: 1; overflow-y: auto; padding: 24px; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; background: #fafbfc;">
+                
+                <!-- TAB 1: OVERVIEW -->
+                <div id="guide-tab-content-overview" class="guide-tab-content active">
+                    <div style="margin-bottom: 20px; text-align: center; padding: 10px 0;">
+                        <i class="fa-solid fa-circle-info" style="font-size: 2.5rem; color: var(--color-indigo); margin-bottom: 12px;"></i>
+                        <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 6px;">ຍິນດີຕ້ອນຮັບສູ່ລະບົບຕິດຕາມວຽກງານ EDL</h3>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 600px; margin: 0 auto;">ລະບົບການຈັດການ ແລະ ຕິດຕາມຄວາມຄືບໜ້າການເຮັດວຽກຂອງແຕ່ລະໜ່ວຍງານໃນຮູບແບບ Kanban Board ແລະ Dashboard ສະຖິຕິທີ່ທັນສະໄໝ.</p>
+                    </div>
+
+                    <div style="background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 20px; box-shadow: var(--shadow-sm);">
+                        <h4 style="color: var(--text-primary); font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-shield-halved" style="color: var(--color-indigo);"></i> ບົດບາດຂອງຜູ້ໃຊ້ງານໃນລະບົບ (User Roles)
+                        </h4>
+                        <ul style="list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 12px;">
+                            <li style="display: flex; gap: 10px;">
+                                <span class="badge bg-indigo" style="align-self: flex-start; margin-top: 2px; padding: 4px 8px; font-size: 0.75rem; min-width: 140px; text-align: center;">ຜູ້ຄຸມງານ / Supervisor</span>
+                                <div>
+                                    <strong style="color: var(--text-primary);">ຫົວໜ້າພາກສ່ວນ ຫຼື ຜູ້ບໍລິຫານລະບົບ:</strong>
+                                    <span style="font-size: 0.9rem; display: block; color: var(--text-muted);">ມີສິດເຕັມໃນການຈັດການລະບົບ: ສ້າງວຽກງານໃໝ່, ມອບໝາຍວຽກໃຫ້ສະມາຊິກ, ແກ້ໄຂ/ລຶບວຽກ, ເພີ່ມ/ລຶບສະມາຊິກ ແລະ ໜ່ວຍງານສັງກັດ, ພ້ອມທັງເບິ່ງພາບລວມສະຖິຕິຂອງທຸກໜ່ວຍງານ.</span>
+                                </div>
+                            </li>
+                            <li style="display: flex; gap: 10px;">
+                                <span class="badge" style="align-self: flex-start; margin-top: 2px; padding: 4px 8px; font-size: 0.75rem; min-width: 140px; text-align: center; background: rgba(99, 102, 241, 0.1); color: var(--color-indigo);">ສະມາຊິກ / Member</span>
+                                <div>
+                                    <strong style="color: var(--text-primary);">ຫົວໜ້າໜ່ວຍງານ ຫຼື ພະນັກງານປະຕິບັດງານ:</strong>
+                                    <span style="font-size: 0.9rem; display: block; color: var(--text-muted);">ສາມາດເບິ່ງວຽກງານສ່ວນຕົວຜ່ານກະດານ Kanban, ປ່ຽນແປງສະຖານະວຽກງານດ້ວຍການລາກ ແລະ ວາງ (Drag & Drop), ຮັບວຽກທີ່ຍັງບໍ່ມີຜູ້ຮັບ, ແລະ ສົ່ງລາຍງານຄວາມຄືບໜ້າພ້ອມແນບເອກະສານ ຫຼື ຖ່າຍຮູບລາຍງານ.</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div style="background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 18px; box-shadow: var(--shadow-sm);">
+                        <h4 style="color: var(--text-primary); font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-key" style="color: var(--color-indigo);"></i> ຂັ້ນຕອນການເຂົ້າສູ່ລະບົບ (Step-by-Step Login)
+                        </h4>
+                        <ol style="padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: var(--text-secondary);">
+                            <li>ກວດສອບ <strong>ລະຫັດພະນັກງານ (Employee ID)</strong> ຂອງທ່ານ (ສາມາດເບິ່ງໄດ້ໃນແຖບ <strong>"ບັນຊີທົດລອງ"</strong> ເພື່ອທົດສອບ).</li>
+                            <li>ປ້ອນລະຫັດພະນັກງານໃສ່ຊ່ອງ <strong>ລະຫັດພະນັກງານ</strong> (ເຊັ່ນ: <code>EMP-003</code> ຫຼື <code>EMP-OFF-01</code>).</li>
+                            <li>ປ້ອນລະຫັດຜ່ານໃສ່ຊ່ອງ <strong>ລະຫັດຜ່ານ</strong> (ລະຫັດຜ່ານເລີ່ມຕົ້ນແມ່ນ <code>1234</code> ຂອງທຸກໆບັນຊີ).</li>
+                            <li>ຄລິກປຸ່ມ <strong>ເຂົ້າສູ່ລະບົບ</strong> ເພື່ອເຂົ້າສູ່ໜ້າຫຼັກຕາມບົດບາດຂອງທ່ານ.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- TAB 2: SUPERVISOR INSTRUCTIONS -->
+                <div id="guide-tab-content-supervisor" class="guide-tab-content hidden">
+                    <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-circle-chevron-right" style="color: var(--color-indigo);"></i> 
+                        ຄູ່ມືການໃຊ້ງານລະບົບສຳລັບ ຜູ້ບໍລິຫານ/ຫົວໜ້າ (Supervisor Guide)
+                    </h3>
+
+                    <div class="guide-steps-container" style="display: flex; flex-direction: column; gap: 16px;">
+                        
+                        <div style="background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; gap: 14px;">
+                            <div style="background: rgba(79, 70, 229, 0.1); color: var(--color-indigo); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 1.1rem;">1</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 4px;">ຕິດຕາມຄວາມຄືບໜ້າ ແລະ ກັ່ນຕອງວຽກງານ</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 6px;">ຢູ່ເທິງສຸດຂອງ Dashboard ຈະມີກາດສະຖິຕິວຽກງານ. ທ່ານສາມາດຄລິກໃສ່ກາດແຕ່ລະອັນ (ເຊັ່ນ: ກາຍກຳນົດ, ສຳເລັດແລ້ວ) ເພື່ອຄັດກອງລາຍການວຽກໃນຕາຕະລາງດ້ານລຸ່ມໄດ້ທັນທີ.</p>
+                                <p style="font-size: 0.9rem; color: var(--text-muted);">ທ່ານຍັງສາມາດໃຊ້ເມນູ Dropdown ເພື່ອເລືອກເບິ່ງສະເພາະ <strong>ໜ່ວຍງານ</strong>, <strong>ຜູ້ຮັບຜິດຊອບ</strong>, <strong>ສະຖານະ</strong> ຫຼື <strong>ລະດັບຄວາມສຳຄັນ</strong> ໄດ້.</p>
+                            </div>
+                        </div>
+
+                        <div style="background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; gap: 14px;">
+                            <div style="background: rgba(79, 70, 229, 0.1); color: var(--color-indigo); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 1.1rem;">2</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 4px;">ການສ້າງວຽກງານໃໝ່ (Create Task)</h4>
+                                <ol style="font-size: 0.9rem; color: var(--text-muted); padding-left: 18px; line-height: 1.5;">
+                                    <li>ຄລິກປຸ່ມ <strong>ສ້າງວຽກງານໃໝ່</strong> ຢູ່ຂວາມືຂອງ Dashboard.</li>
+                                    <li>ປ້ອນ <strong>ຊື່ວຽກງານ</strong> ແລະ <strong>ລາຍລະອຽດວຽກງານ</strong>.</li>
+                                    <li>ເລືອກ <strong>ໜ່ວຍງານທີ່ຮັບຜິດຊອບ</strong>. ລະບົບຈະໂຫຼດລາຍຊື່ພະນັກງານໃນໜ່ວຍງານນັ້ນມາໃຫ້ເລືອກໃນຊ່ອງ <strong>ຜູ້ຮັບຜິດຊອບ</strong>.</li>
+                                    <li>ເລືອກ <strong>ວັນທີເລີ່ມຕົ້ນ</strong> ແລະ <strong>ວັນທີ່ສຳເລັດ (Deadline)</strong>.</li>
+                                    <li>ເລືອກລະດັບຄວາມສໍາຄັນ ແລະ ສະຖານະເລີ່ມຕົ້ນ. ທ່ານຍັງສາມາດແນບໄຟລ໌ເອກະສານ ຫຼື ຖ່າຍຮູບແນບໄດ້ໃນສ່ວນ Attachments.</li>
+                                    <li>ກົດປຸ່ມ <strong>ບັນທຶກຂໍ້ມູນ</strong> ເພື່ອບັນທຶກວຽກເຂົ້າໃນລະບົບ.</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div style="background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; gap: 14px;">
+                            <div style="background: rgba(79, 70, 229, 0.1); color: var(--color-indigo); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 1.1rem;">3</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 4px;">ການມອບໝາຍວຽກຢ່າງໄວວາ (Quick Delegation)</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 6px;">ໃນຕາຕະລາງລາຍການວຽກ, ທ່ານສາມາດຄລິກປຸ່ມ <strong>ມອບວຽກ</strong> (ໄອຄອນຮູບຄົນ <i class="fa-solid fa-user-plus" style="color: var(--color-indigo);"></i>) ຢູ່ຖັນການຈັດການ.</p>
+                                <p style="font-size: 0.9rem; color: var(--text-muted);">ເລືອກສະມາຊິກພະນັກງານທີ່ຕ້ອງການມອບວຽກງານໃຫ້ ແລ້ວກົດ <strong>ຢືນຢັນການມອບວຽກ</strong> ເພື່ອປ່ຽນຜູ້ຮັບຜິດຊອບຢ່າງວ່ອງໄວ.</p>
+                            </div>
+                        </div>
+
+                        <div style="background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; gap: 14px;">
+                            <div style="background: rgba(79, 70, 229, 0.1); color: var(--color-indigo); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 1.1rem;">4</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 4px;">ການຈັດການສະມາຊິກ ແລະ ໜ່ວຍງານ</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 6px;">ຄລິກປຸ່ມ <strong>ຈັດການສະມາຊິກທີມງານ</strong> ຢູ່ເທິງຕາຕະລາງວຽກງານ.</p>
+                                <p style="font-size: 0.9rem; color: var(--text-muted);">ທ່ານສາມາດເພີ່ມພະນັກງານໃໝ່, ແກ້ໄຂຂໍ້ມູນສ່ວນຕົວ, ກວດສອບ/ປ່ຽນລະຫັດຜ່ານໃຫ້ພະນັກງານ, ຫຼື ປ່ຽນສີປະຈຳຕົວຂອງແຕ່ລະຄົນ. ໃນແຖບ "ຈັດການຫ້ອງການ-ໜ່ວຍງານ", ທ່ານຍັງສາມາດສ້າງ ຫຼື ປ່ຽນຊື່ໜ່ວຍງານຕ່າງໆໃນ EDL ໄດ້.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- TAB 3: MEMBER INSTRUCTIONS -->
+                <div id="guide-tab-content-member" class="guide-tab-content hidden">
+                    <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-circle-chevron-right" style="color: var(--color-done);"></i> 
+                        ຄູ່ມືການໃຊ້ງານລະບົບສຳລັບ ສະມາຊິກທີມງານ (Member Guide)
+                    </h3>
+
+                    <div class="guide-steps-container" style="display: flex; flex-direction: column; gap: 16px;">
+                        
+                        <div style="background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; gap: 14px;">
+                            <div style="background: rgba(16, 185, 129, 0.1); color: var(--color-done); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 1.1rem;">1</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 4px;">ການຈັດການວຽກເທິງກະດານ Kanban (My Kanban Board)</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 6px;">ເມື່ອເຂົ້າສູ່ລະບົບ, ທ່ານຈະເຫັນວຽກທັງໝົດທີ່ຖືກມອບໝາຍໃຫ້ທ່ານ ຈັດລຽງຕາມ 3 ຖັງສະຖານະ: <strong>To Do</strong>, <strong>In Progress</strong>, ແລະ <strong>Done</strong>.</p>
+                                <p style="font-size: 0.9rem; color: var(--text-muted);">ທ່ານສາມາດປ່ຽນແປງສະຖານະວຽກງານໄດ້ໂດຍ <strong>ການລາກກາດວຽກງານ (Drag & Drop)</strong> ໄປວາງໃສ່ຖັງສະຖານະອື່ນ ຫຼື ຄລິກປຸ່ມລູກສອນຊ້າຍ-ຂວາ ຢູ່ມຸມຂວາເທິງຂອງກາດວຽກງານນັ້ນ.</p>
+                            </div>
+                        </div>
+
+                        <div style="background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; gap: 14px;">
+                            <div style="background: rgba(16, 185, 129, 0.1); color: var(--color-done); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 1.1rem;">2</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 4px;">精度ການຮັບວຽກງານທີ່ຫວ່າງ (Claim Unassigned Tasks)</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 6px;">ຫາກມີວຽກງານທີ່ຖືກສ້າງຂຶ້ນໃນໜ່ວຍງານຂອງທ່ານ ແຕ່ຍັງບໍ່ທັນມີຜູ້ຮັບຜິດຊອບ, ທ່ານສາມາດຕິກເອົາຊ່ອງ <strong>"ສະແດງວຽກທີ່ຍັງບໍ່ມີຜູ້ຮັບໃນໜ່ວຍງານຂອງຂ້ອຍ"</strong>.</p>
+                                <p style="font-size: 0.9rem; color: var(--text-muted);">ກາດວຽກງານທີ່ຫວ່າງຈະສະແດງຂຶ້ນມາໃນຖັງ To Do ພ້ອມປຸ່ມ <strong>ຮັບຜິດຊອບວຽກນີ້</strong> (ໄອຄອນ <i class="fa-solid fa-hands-holding-child"></i>). ທ່ານສາມາດຄລິກປຸ່ມນັ້ນເພື່ອຮັບວຽກມາມາປະຕິບັດດ້ວຍຕົນເອງໄດ້ທັນທີ.</p>
+                            </div>
+                        </div>
+
+                        <div style="background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; gap: 14px;">
+                            <div style="background: rgba(16, 185, 129, 0.1); color: var(--color-done); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 1.1rem;">3</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 4px;">ການລາຍງານຄວາມຄືບໜ້າ ແລະ ແນບໄຟລ໌ (Progress Reporting)</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 6px;">ຄລິກປຸ່ມ <strong>ອັບເດດ/ລາຍງານ</strong> (ໄອຄອນປາກກາ) ຢູ່ເທິງກາດວຽກງານ ເພື່ອເປີດຟອມລາຍງານ.</p>
+                                <ul style="font-size: 0.9rem; color: var(--text-muted); padding-left: 18px; line-height: 1.5;">
+                                    <li>ຂຽນລາຍລະອຽດຄວາມຄືບໜ້າ ຫຼື ຜົນການເຮັດວຽກໃສ່ຊ່ອງ <strong>ລາຍງານຄວາມຄືບໜ້າ / ຜົນການເຮັດວຽກ</strong>.</li>
+                                    <li>ທ່ານສາມາດຄລິກປຸ່ມ <strong>ແນບໄຟລ໌ເອກະສານ...</strong> ເພື່ອເລືອກໄຟລ໌ PDF, ຮູບພາບ ຫຼື ເອກະສານອື່ນໆ.</li>
+                                    <li>ຫຼື ຄລິກປຸ່ມ <strong>ຖ່າຍຮູບລາຍງານ...</strong> ເພື່ອເປີດກ້ອງຖ່າຍຮູບ (Camera Capture) ຖ່າຍພາບໜ້າວຽກຕົວຈິງເພື່ອລາຍງານທັນທີ.</li>
+                                    <li>ກົດປຸ່ມ <strong>ບັນທຶກຂໍ້ມູນ</strong> ເພື່ອສົ່ງລາຍງານ.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div style="background: white; border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 16px; box-shadow: var(--shadow-sm); display: flex; gap: 14px;">
+                            <div style="background: rgba(16, 185, 129, 0.1); color: var(--color-done); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 1.1rem;">4</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); font-size: 0.95rem; margin-bottom: 4px;">ການເບິ່ງພາບລວມຂອງທີມງານ (Team Dashboard)</h4>
+                                <p style="font-size: 0.9rem; color: var(--text-muted);">ທ່ານສາມາດຄລິກແຖບ <strong>ພາບລວມຂອງທີມງານ (Team Dashboard)</strong> ຢູ່ດ້ານເທິງ ເພື່ອເບິ່ງສະຖິຕິວຽກງານ ແລະ ຕິດຕາມຄວາມຄືບໜ້າຂອງໝູ່ເພື່ອນຮ່ວມທີມໃນແຕ່ລະໜ່ວຍງານໄດ້ເຊັ່ນກັນ.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- TAB 4: DEMO ACCOUNTS -->
+                <div id="guide-tab-content-accounts" class="guide-tab-content hidden">
+                    <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-users" style="color: var(--color-indigo);"></i> 
+                        ລາຍຊື່ບັນຊີຜູ້ໃຊ້ງານທົດລອງ (Demo Accounts)
+                    </h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px;">ທ່ານສາມາດນຳໃຊ້ບັນຊີລຸ່ມນີ້ເພື່ອເຂົ້າສູ່ລະບົບ ແລະ ທົດສອບການໃຊ້ງານແຕ່ລະບົດບາດ. ລະຫັດຜ່ານຂອງທຸກບັນຊີແມ່ນ <strong><code>1234</code></strong>.</p>
+                    
+                    <div style="overflow-x: auto; border: 1px solid var(--glass-border); border-radius: var(--radius-md); background: white;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+                            <thead>
+                                <tr style="background: #f1f5f9; border-bottom: 1px solid var(--glass-border); color: var(--text-primary);">
+                                    <th style="padding: 12px 16px;">ລະຫັດພະນັກງານ</th>
+                                    <th style="padding: 12px 16px;">ຊື່ ແລະ ນາມສະກຸນ</th>
+                                    <th style="padding: 12px 16px;">ຕໍາແໜ່ງ / ໜ່ວຍງານ</th>
+                                    <th style="padding: 12px 16px;">ບົດບາດສິດທິ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 12px 16px; font-weight: bold; color: var(--color-indigo);"><code>admin</code> ຫຼື <code>EMP-OFF-01</code></td>
+                                    <td style="padding: 12px 16px;">ຫົວໜ້າຫ້ອງການ</td>
+                                    <td style="padding: 12px 16px;">ຫ້ອງການ / ບໍລິຫານ</td>
+                                    <td style="padding: 12px 16px;"><span class="badge bg-indigo" style="padding: 3px 6px; font-size: 0.75rem;">Supervisor (ແອດມິນ)</span></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 12px 16px; font-weight: bold; color: var(--color-indigo);"><code>EMP-OFF-02</code></td>
+                                    <td style="padding: 12px 16px;">ຮອງຫ້ອງການ</td>
+                                    <td style="padding: 12px 16px;">ຫ້ອງການ / ບໍລິຫານ</td>
+                                    <td style="padding: 12px 16px;"><span class="badge bg-indigo" style="padding: 3px 6px; font-size: 0.75rem;">Supervisor (ແອດມິນ)</span></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 12px 16px; font-weight: bold; color: var(--text-primary);"><code>EMP-002</code></td>
+                                    <td style="padding: 12px 16px;">ສົມພອນ ແກ້ວມະນີ</td>
+                                    <td style="padding: 12px 16px;">ຫົວໜ້າໜ່ວຍງານວາງແຜນ (ເຕັກນິກໄຟຟ້າ)</td>
+                                    <td style="padding: 12px 16px;"><span class="badge" style="padding: 3px 6px; font-size: 0.75rem; background: rgba(79, 70, 229, 0.1); color: var(--color-indigo);">Dept Admin (ຫົວໜ້າໜ່ວຍ)</span></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 12px 16px; font-weight: bold; color: var(--text-primary);"><code>EMP-003</code></td>
+                                    <td style="padding: 12px 16px;">ອານຸສອນ ໄຊຍະສິດ</td>
+                                    <td style="padding: 12px 16px;">ວິສະວະກອນ (ເຕັກນິກໄຟຟ້າ)</td>
+                                    <td style="padding: 12px 16px;"><span class="badge" style="padding: 3px 6px; font-size: 0.75rem; background: #e2e8f0; color: var(--text-secondary);">Member (ພະນັກງານ)</span></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 12px 16px; font-weight: bold; color: var(--text-primary);"><code>EMP-005</code></td>
+                                    <td style="padding: 12px 16px;">ວິໄລເພັດ ສີຫາລາດ</td>
+                                    <td style="padding: 12px 16px;">ຫົວໜ້າໜ່ວຍງານຄວາມປອດໄພ</td>
+                                    <td style="padding: 12px 16px;"><span class="badge" style="padding: 3px 6px; font-size: 0.75rem; background: rgba(79, 70, 229, 0.1); color: var(--color-indigo);">Dept Admin (ຫົວໜ້າໜ່ວຍ)</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 12px 16px; font-weight: bold; color: var(--text-primary);"><code>EMP-006</code></td>
+                                    <td style="padding: 12px 16px;">ສຸກສະຫວັນ ດວງດີ</td>
+                                    <td style="padding: 12px 16px;">ວິຊາການຄວາມປອດໄພ</td>
+                                    <td style="padding: 12px 16px;"><span class="badge" style="padding: 3px 6px; font-size: 0.75rem; background: #e2e8f0; color: var(--text-secondary);">Member (ພະນັກງານ)</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="background: rgba(253, 186, 116, 0.12); border-left: 4px solid #f97316; border-radius: var(--radius-sm); padding: 12px; margin-top: 16px; color: #c2410c; font-size: 0.85rem;">
+                        <i class="fa-solid fa-circle-exclamation" style="margin-right: 6px;"></i>
+                        <strong>ໝາຍເຫດ:</strong> ພະນັກງານທີ່ສັງກັດຢູ່ພາກສ່ວນ <strong>"ຫ້ອງການ / ບໍລິຫານ"</strong> (deptId 3) ຫຼື ມີບົດບາດເປັນ <strong>Supervisor</strong> ຈະໄດ້ຮັບສິດທິເປັນແອດມິນລະບົບເພື່ອສ້າງວຽກ ແລະ ຈັດການທີມງານທັງໝົດ.
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid var(--glass-border); display: flex; justify-content: flex-end; flex-shrink: 0; background: rgba(15, 23, 42, 0.01);">
+                <button type="button" class="primary-btn" data-modal="modal-guide" style="padding: 8px 20px; font-size: 0.9rem; background: var(--color-indigo); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer;">
+                    ເຂົ້າໃຈແລ້ວ
+                </button>
+            </div>
         </div>
     </div>
 

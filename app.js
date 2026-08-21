@@ -2530,6 +2530,23 @@ function setupGlobalEventListeners() {
         }
         closeModal('modal-profile');
     });
+
+    // 7. Open User Guide Modal
+    const loginGuideBtn = document.getElementById('btn-login-guide');
+    if (loginGuideBtn) {
+        loginGuideBtn.addEventListener('click', () => {
+            switchGuideTab('overview');
+            openModal('modal-guide');
+        });
+    }
+
+    const userGuideBtn = document.getElementById('btn-user-guide');
+    if (userGuideBtn) {
+        userGuideBtn.addEventListener('click', () => {
+            switchGuideTab('overview');
+            openModal('modal-guide');
+        });
+    }
 }
 
 // Start the Application
@@ -2667,3 +2684,34 @@ window.handleDirectLoginSubmit = function(e) {
     showToast("ລະຫັດພະນັກງານ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ!", "error");
     pwdInput.select();
 };
+
+window.switchGuideTab = function(tabName) {
+    // Hide all guide tab contents
+    const contents = document.querySelectorAll('.guide-tab-content');
+    contents.forEach(el => el.classList.add('hidden'));
+
+    // Deactivate all guide tab buttons
+    const buttons = document.querySelectorAll('#modal-guide .modal-tab-btn');
+    buttons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.color = 'var(--text-muted)';
+        btn.style.borderBottomColor = 'transparent';
+        btn.style.fontWeight = '500';
+    });
+
+    // Show selected content
+    const selectedContent = document.getElementById(`guide-tab-content-${tabName}`);
+    if (selectedContent) {
+        selectedContent.classList.remove('hidden');
+    }
+
+    // Activate selected button
+    const selectedButton = document.getElementById(`tab-btn-guide-${tabName}`);
+    if (selectedButton) {
+        selectedButton.classList.add('active');
+        selectedButton.style.color = 'var(--color-indigo)';
+        selectedButton.style.borderBottomColor = 'var(--color-indigo)';
+        selectedButton.style.fontWeight = '600';
+    }
+};
+

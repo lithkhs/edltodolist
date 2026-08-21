@@ -2053,3 +2053,36 @@ body {
 .password-toggle-btn:hover {
     color: var(--text-primary);
 }
+
+/* ==========================================================================
+   USER GUIDE MODAL STYLING
+   ========================================================================== */
+.modal-body-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-body-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+.modal-body-scroll::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.08);
+    border-radius: var(--radius-sm);
+}
+.modal-body-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 23, 42, 0.15);
+}
+
+.guide-tab-content {
+    animation: guideFadeIn 0.2s ease-out;
+}
+
+@keyframes guideFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
