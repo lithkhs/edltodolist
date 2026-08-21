@@ -2732,4 +2732,19 @@ window.importSystemData = function() {
     reader.readAsText(file);
 };
 
+// Reset all data in LocalStorage to default code values
+window.resetSystemToDefaults = function() {
+    if (confirm("ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການຣີເຊັດຂໍ້ມູນທັງໝົດເປັນຄ່າເລີ່ມຕົ້ນ? ຂໍ້ມູນວຽກງານ ແລະ ພະນັກງານທີ່ທ່ານເພີ່ມໃໝ່ຈະຖືກລຶບອອກ.")) {
+        localStorage.removeItem('edl_members');
+        localStorage.removeItem('edl_tasks');
+        localStorage.removeItem('edl_departments');
+        localStorage.removeItem('edl_current_user_session');
+        
+        showToast("ຣີເຊັດຂໍ້ມູນເປັນຄ່າເລີ່ມຕົ້ນສຳເລັດແລ້ວ! ກຳລັງໂຫຼດໜ້າໃໝ່...", "success");
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    }
+};
+
 
