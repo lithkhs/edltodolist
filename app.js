@@ -1328,13 +1328,14 @@ window.openEditTaskModal = function(taskId) {
     document.getElementById('task-deadline-input').disabled = !canEditCoreFields;
     document.getElementById('task-priority-input').disabled = !canEditCoreFields;
 
-    // Keep status and report editable ONLY if creator or assignee of the task
-    const canEditStatusAndReport = isCreator || isAssignee;
+    // Status can also ONLY be edited by the creator/assigner of the task
+    document.getElementById('task-status-input').disabled = !canEditCoreFields;
 
-    document.getElementById('task-status-input').disabled = !canEditStatusAndReport;
-    document.getElementById('task-report-input').disabled = !canEditStatusAndReport;
-    document.getElementById('btn-trigger-file').disabled = !canEditStatusAndReport;
-    document.getElementById('btn-trigger-camera').disabled = !canEditStatusAndReport;
+    // Report and attachments can be edited by the creator OR the assignee
+    const canEditReportAndAttachments = isCreator || isAssignee;
+    document.getElementById('task-report-input').disabled = !canEditReportAndAttachments;
+    document.getElementById('btn-trigger-file').disabled = !canEditReportAndAttachments;
+    document.getElementById('btn-trigger-camera').disabled = !canEditReportAndAttachments;
 
     // Load and render attachments after setting disabled states
     currentAttachments = task.attachments ? [...task.attachments] : [];
