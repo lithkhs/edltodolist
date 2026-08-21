@@ -5,7 +5,8 @@
 let DEPARTMENTS = JSON.parse(localStorage.getItem('edl_departments')) || {
     1: "ໜ່ວຍງານເຕັກນິກ ແລະ ວາງແຜນລະບົບໄຟຟ້າ",
     2: "ໜ່ວຍງານເຕັກນິກຄວາມປອດໄພ",
-    3: "ຫ້ອງການ / ບໍລິຫານ"
+    3: "ຫ້ອງການ ເຕັກນິກ ແລະ ວາງແຜນລະບົບໄຟຟ້າ",
+    4: "ຄະນະສາຂາ"
 };
 
 function isUserAdmin(user) {
@@ -39,16 +40,16 @@ function isUserManagement(user) {
     return isUserAdmin(user) || isUserDeptAdmin(user);
 }
 
-// Default Team Members for initial load
+// Default Team Members for initial load (Customized by User)
 const DEFAULT_MEMBERS = [
-    { id: "m-off-1", empId: "EMP-OFF-01", name: "ຫົວໜ້າຫ້ອງການ", role: "ຫົວໜ້າຫ້ອງການ", deptId: 3, avatarColor: "#3b82f6", password: "1234", isSupervisor: true },
-    { id: "m-off-2", empId: "EMP-OFF-02", name: "ຮອງຫ້ອງການ", role: "ຮອງຫ້ອງການ", deptId: 3, avatarColor: "#10b981", password: "1234", isSupervisor: true },
-    { id: "m-1", empId: "EMP-002", name: "ສົມພອນ ແກ້ວມະນີ", role: "ຫົວໜ້າໜ່ວຍງານວາງແຜນ", deptId: 1, avatarColor: "#6366f1", password: "1234" },
-    { id: "m-2", empId: "EMP-003", name: "ອານຸສອນ ໄຊຍະສິດ", role: "ວິສະວະກອນໄຟຟ້າ", deptId: 1, avatarColor: "#0ea5e9", password: "1234" },
-    { id: "m-3", empId: "EMP-004", name: "ເກດສະໜາ ພົມມະຈັນ", role: "ນັກວິເຄາະລະບົບ", deptId: 1, avatarColor: "#10b981", password: "1234" },
-    { id: "m-4", empId: "EMP-005", name: "ວິໄລເພັດ ສີຫາລາດ", role: "ຫົວໜ້າໜ່ວຍງານຄວາມປອດໄພ", deptId: 2, avatarColor: "#8b5cf6", password: "1234" },
-    { id: "m-5", empId: "EMP-006", name: "ສຸກສະຫວັນ ດວງດີ", role: "ວິຊາການຄວາມປອດໄພ", deptId: 2, avatarColor: "#f59e0b", password: "1234" },
-    { id: "m-6", empId: "EMP-007", name: "ພອນປະເສີດ ສີປະເສີດ", role: "ຜູ້ກວດກາພາກສະໜາມ", deptId: 2, avatarColor: "#ec4899", password: "1234" }
+    {"id":"m-off-1","empId":"TN1","name":"ທ່ານ ຄຳສຸກ ອ່ຽງບົວລາ","role":"ຫົວໜ້າຫ້ອງການ","deptId":3,"avatarColor":"#6366f1","password":"1234","isSupervisor":true,"profilePic":null},
+    {"id":"m-off-2","empId":"TN2","name":"ທ່ານ ທະນູເພັດ","role":"ຮອງຫົວໜ້າຫ້ອງການ","deptId":3,"avatarColor":"#10b981","password":"1234","isSupervisor":true,"profilePic":null},
+    {"id":"m-1","empId":"TN3","name":"ທ່ານ ໂອລາລິດ ກ້ຽວຮ່ວມເສືອງ","role":"ຫົວໜ້າໜ່ວຍງານ","deptId":1,"avatarColor":"#6366f1","password":"1234","profilePic":null},
+    {"id":"m-2","empId":"TN4","name":"ທ່ານ ກິແກ້ວ ຄຳນວນ","role":"ຮອງຫົວໜ້າໜ່ວຍງານ","deptId":1,"avatarColor":"#0ea5e9","password":"1234","profilePic":null},
+    {"id":"m-3","empId":"TN5","name":"ທ່ານ ກະຕິກ ໄຊຍະສິງ","role":"ວິຊາການ","deptId":1,"avatarColor":"#10b981","password":"1234","profilePic":null},
+    {"id":"m-4","empId":"TN6","name":"ທ່ານ ຄອນທະລີ ແກ້ວຈັນສີ","role":"ຫົວໜ້າໜ່ວຍງານ","deptId":2,"avatarColor":"#8b5cf6","password":"1234","profilePic":null},
+    {"id":"m-5","empId":"TN7","name":"ທ່ານ ວຽງໄຊ ວີເເຄລູ","role":"ຮອງຫົວໜ້າໜ່ວຍງານ","deptId":2,"avatarColor":"#f59e0b","password":"1234","profilePic":null},
+    {"id":"m-1787324006166","empId":"EDL","name":"ທ່ານຈັນຖະໜອມ ແສງສະຫັວນ","role":"ຄະນະສາຂາ","deptId":4,"avatarColor":"#6366f1","password":"1234","profilePic":null}
 ];
 
 // Helper to get date string relative to current time
@@ -96,89 +97,8 @@ function playNotificationSound() {
     }
 }
 
-// Default Tasks for initial load
-const DEFAULT_TASKS = [
-    {
-        id: "t-1",
-        name: "ວາງແຜນຂະຫຍາຍຕາໜ່າງໄຟຟ້າ 22kV ບ້ານທົ່ງກາງ",
-        desc: "ສຳຫຼວດພື້ນທີ່ ແລະ ອອກແບບເສັ້ນທາງແລວສາຍສົ່ງໄຟຟ້າແຮງກາງ 22kV ເພື່ອຮອງຮັບການຊົມໃຊ້ໄຟຟ້າທີ່ເພີ່ມຂຶ້ນໃນເຂດບ້ານທົ່ງກາງ.",
-        start: getDateOffset(-5),
-        deadline: getDateOffset(5),
-        priority: "high",
-        status: "inprogress",
-        assigneeId: "m-2",
-        deptId: 1,
-        report: "ກຳລັງດຳເນີນການສຳຫຼວດພື້ນທີ່ຈິງ ແລະ ແຕ້ມແລວສາຍສົ່ງເບື້ອງຕົ້ນ."
-    },
-    {
-        id: "t-2",
-        name: "ອອກແບບຜັງລະບົບໄຟຟ້າສຳຮອງ ສະຖານີດົງໂດກ",
-        desc: "ຂຽນແບບ Single Line Diagram ແລະ ຈັດວາງຕຳແໜ່ງເຄື່ອງກຳເນີດໄຟຟ້າສຳຮອງ (Generator Set) ຄວາມແຮງ 500kVA.",
-        start: getDateOffset(-1),
-        deadline: getDateOffset(7),
-        priority: "medium",
-        status: "todo",
-        assigneeId: "m-3",
-        deptId: 1
-    },
-    {
-        id: "t-3",
-        name: "ກວດກາອຸປະກອນປ້ອງກັນໄພ (PPE) ປະຈຳໄຕມາດ",
-        desc: "ກວດສອບຄຸນນະພາບ ແລະ ຈຳນວນໝວກນິລະໄພ, ສາຍຮັດນິລະໄພ, ຖົງມືກັນໄຟຟ້າແຮງສູງ ຂອງພະນັກງານພາກສະໜາມທັງໝົດ.",
-        start: getDateOffset(-10),
-        deadline: getDateOffset(-2),
-        priority: "high",
-        status: "done",
-        assigneeId: "m-5",
-        deptId: 2,
-        report: "ໄດ້ກວດກາອຸປະກອນປ້ອງກັນໄພ (PPE) ຂອງພະນັກງານພາກສະໜາມທັງໝົດແລ້ວ. ພົບວ່າມີໝວກນິລະໄພຊຳລຸດ 2 ໃບ ແລະ ໄດ້ທຳການແຈກຢາຍທົດແທນໃໝ່ຮຽບຮ້ອຍ."
-    },
-    {
-        id: "t-4",
-        name: "ຝຶກອົບຮົມຄວາມປອດໄພການເຮັດວຽກເທິງບ່ອນສູງ",
-        desc: "ຈັດສຳມະນາພາກທິດສະດີ ແລະ ປະຕິບັດຕົວຈິງກ່ຽວກັບການນຳໃຊ້ Safety Harness ແລະ ການກູ້ໄພສຸກເສີນເວລາມີອຸປະຕິເຫດເທິງເສົາໄຟ.",
-        start: getDateOffset(2),
-        deadline: getDateOffset(10),
-        priority: "medium",
-        status: "todo",
-        assigneeId: "m-6",
-        deptId: 2
-    },
-    {
-        id: "t-5",
-        name: "ທົບທວນມາດຕະຖານການຮັກສາຄວາມປອດໄພ 2026",
-        desc: "ປັບປຸງເອກະສານຄູ່ມື Safety Handbook ໃຫ້ສອດຄ່ອງກັບລະບຽບການໃໝ່ຂອງກະຊວງພະລັງງານ ແລະ ບໍ່ແຮ່.",
-        start: getDateOffset(-4),
-        deadline: getDateOffset(4),
-        priority: "low",
-        status: "inprogress",
-        assigneeId: "m-4",
-        deptId: 2,
-        report: "ທົບທວນໄປແລ້ວ 50% ຂອງເນື້ອຫາທັງໝົດ, ຄາດວ່າຈະສຳເລັດຮ່າງທຳອິດໃນອາທິດໜ້າ."
-    },
-    {
-        id: "t-6",
-        name: "ປັບປຸງແບບແຕ້ມລະບົບສາຍສົ່ງ EDL 115kV",
-        desc: "ແກ້ໄຂແບບແຕ້ມລະບົບ AutoCad Transmission Line 115kV ລະຫວ່າງສະຖານີໂພນຕ້ອງ ຫາ ສະຖານີນາຊາຍທອງ.",
-        start: getDateOffset(0),
-        deadline: getDateOffset(12),
-        priority: "medium",
-        status: "todo",
-        assigneeId: "",
-        deptId: 1
-    },
-    {
-        id: "t-7",
-        name: "ກວດສອບຄວາມປອດໄພໝໍ້ແປງໄຟຟ້າຕະຫຼາດເຊົ້າ",
-        desc: "ກວດກາລະດັບນ້ຳມັນໝໍ້ແປງ, ຄ່າອຸນຫະພູມ, ລະບົບສາຍດິນ (Earthing) ແລະ ສິ່ງກີດຂວາງທີ່ອາດກໍ່ໃຫ້ເກີດອັກຄີໄພ.",
-        start: getDateOffset(-2),
-        deadline: getDateOffset(1),
-        priority: "high",
-        status: "todo",
-        assigneeId: "",
-        deptId: 2
-    }
-];
+// Default Tasks for initial load (Customized to Empty by User)
+const DEFAULT_TASKS = [];
 
 // App State variables
 let members = [];
@@ -2123,50 +2043,63 @@ document.getElementById('form-member').addEventListener('submit', (e) => {
     renderTeamProgress();
 });
 
-// Switch between Members and Departments tab inside modal-team
+// Switch between Members, Departments, and Backup tab inside modal-team
 window.switchModalTab = function(tabName) {
     const btnMembers = document.getElementById('tab-btn-members');
     const btnDepts = document.getElementById('tab-btn-depts');
+    const btnBackup = document.getElementById('tab-btn-backup');
     const panelMembers = document.getElementById('modal-tab-content-members');
     const panelDepts = document.getElementById('modal-tab-content-depts');
+    const panelBackup = document.getElementById('modal-tab-content-backup');
 
     if (!btnMembers || !btnDepts) return;
 
+    // Reset all tabs style
+    const tabs = [
+        { btn: btnMembers, panel: panelMembers },
+        { btn: btnDepts, panel: panelDepts },
+        { btn: btnBackup, panel: panelBackup }
+    ];
+
+    tabs.forEach(t => {
+        if (t.btn && t.panel) {
+            t.btn.classList.remove('active');
+            t.btn.style.color = 'var(--text-muted)';
+            t.btn.style.borderBottomColor = 'transparent';
+            t.btn.style.fontWeight = '500';
+            t.panel.classList.add('hidden');
+            t.panel.classList.remove('active');
+        }
+    });
+
+    // Set selected tab style
+    let activeTab = null;
+    if (tabName === 'backup') activeTab = { btn: btnBackup, panel: panelBackup };
+    else if (tabName === 'depts') activeTab = { btn: btnDepts, panel: panelDepts };
+    else activeTab = { btn: btnMembers, panel: panelMembers };
+
+    if (activeTab && activeTab.btn && activeTab.panel) {
+        activeTab.btn.classList.add('active');
+        activeTab.btn.style.color = 'var(--color-indigo)';
+        activeTab.btn.style.borderBottomColor = 'var(--color-indigo)';
+        activeTab.btn.style.fontWeight = '600';
+        activeTab.panel.classList.remove('hidden');
+        activeTab.panel.classList.add('active');
+    }
+
     if (tabName === 'members') {
-        btnMembers.classList.add('active');
-        btnMembers.style.color = 'var(--color-indigo)';
-        btnMembers.style.borderBottomColor = 'var(--color-indigo)';
-        btnMembers.style.fontWeight = '600';
-
-        btnDepts.classList.remove('active');
-        btnDepts.style.color = 'var(--text-muted)';
-        btnDepts.style.borderBottomColor = 'transparent';
-        btnDepts.style.fontWeight = '500';
-
-        panelMembers.classList.add('active');
-        panelMembers.classList.remove('hidden');
-        panelDepts.classList.add('hidden');
-        panelDepts.classList.remove('active');
-        
         renderTeamManagementList();
-    } else {
-        btnDepts.classList.add('active');
-        btnDepts.style.color = 'var(--color-indigo)';
-        btnDepts.style.borderBottomColor = 'var(--color-indigo)';
-        btnDepts.style.fontWeight = '600';
-
-        btnMembers.classList.remove('active');
-        btnMembers.style.color = 'var(--text-muted)';
-        btnMembers.style.borderBottomColor = 'transparent';
-        btnMembers.style.fontWeight = '500';
-
-        panelDepts.classList.add('active');
-        panelDepts.classList.remove('hidden');
-        panelMembers.classList.add('hidden');
-        panelMembers.classList.remove('active');
-
+    } else if (tabName === 'depts') {
         renderDeptManagementList();
         resetDeptForm();
+    } else if (tabName === 'backup') {
+        // Reset import state
+        const fileInput = document.getElementById('import-file-input');
+        if (fileInput) fileInput.value = '';
+        const fileNameSpan = document.getElementById('import-file-name');
+        if (fileNameSpan) fileNameSpan.innerText = 'ຍັງບໍ່ໄດ້ເລືອກໄຟລ໌';
+        const confirmBtn = document.getElementById('btn-confirm-import');
+        if (confirmBtn) confirmBtn.classList.add('hidden');
     }
 };
 
@@ -2714,4 +2647,89 @@ window.switchGuideTab = function(tabName) {
         selectedButton.style.fontWeight = '600';
     }
 };
+
+// ==========================================================================
+// BACKUP & RESTORE DATA CONTROLLER
+// ==========================================================================
+
+// Export all system state as a downloadable JSON file
+window.exportSystemData = function() {
+    const dataStr = JSON.stringify({
+        departments: DEPARTMENTS,
+        members: members,
+        tasks: tasks
+    }, null, 2);
+    
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    // Get formatted date string for filename
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const exportFileDefaultName = `edl_taskboard_backup_${dateStr}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    showToast("ສົ່ງອອກຂໍ້ມູນລະບົບສຳເລັດແລ້ວ!", "success");
+};
+
+// Handle file input selection for import
+window.handleImportFileChange = function(input) {
+    const fileNameSpan = document.getElementById('import-file-name');
+    const confirmBtn = document.getElementById('btn-confirm-import');
+    
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        fileNameSpan.innerText = file.name;
+        confirmBtn.classList.remove('hidden');
+    } else {
+        fileNameSpan.innerText = 'ຍັງບໍ່ໄດ້ເລືອກໄຟລ໌';
+        confirmBtn.classList.add('hidden');
+    }
+};
+
+// Read the uploaded JSON file and import it to LocalStorage
+window.importSystemData = function() {
+    const fileInput = document.getElementById('import-file-input');
+    if (!fileInput.files || !fileInput.files[0]) {
+        showToast("ກະລຸນາເລືອກໄຟລ໌ຂໍ້ມູນກ່ອນ!", "error");
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            
+            // Validate basic structure
+            if (!importedData.departments || !importedData.members || !importedData.tasks) {
+                showToast("ຮູບແບບໄຟລ໌ບໍ່ຖືກຕ້ອງ! ກະລຸນາກວດສອບວ່າເປັນໄຟລ໌ສຳຮອງຂອງ EDL Taskboard.", "error");
+                return;
+            }
+            
+            // Set variables
+            DEPARTMENTS = importedData.departments;
+            members = importedData.members;
+            tasks = importedData.tasks;
+            
+            // Save state to LocalStorage
+            await saveState();
+            
+            showToast("ນຳເຂົ້າຂໍ້ມູນລະບົບສຳເລັດແລ້ວ! ລະບົບກຳລັງໂຫຼດໜ້າໃໝ່...", "success");
+            
+            // Reload page to reflect changes
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+            
+        } catch (err) {
+            console.error("Import error:", err);
+            showToast("ເກີດຂໍ້ຜິດພາດໃນການອ່ານໄຟລ໌ JSON!", "error");
+        }
+    };
+    reader.readAsText(file);
+};
+
 
