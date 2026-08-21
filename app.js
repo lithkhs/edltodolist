@@ -2649,6 +2649,7 @@ function setupGlobalEventListeners() {
             pwdInput.value = localStorage.getItem('edl_supervisor_password') || '1234';
             roleGroup.style.display = 'none';
             colorGroup.style.display = 'none';
+            roleInput.required = false;
             nameInput.disabled = false;
             
             currentProfilePhoto = localStorage.getItem('edl_supervisor_photo') || null;
@@ -2659,6 +2660,7 @@ function setupGlobalEventListeners() {
             pwdInput.value = currentUser.password || '1234';
             roleGroup.style.display = 'flex';
             colorGroup.style.display = 'flex';
+            roleInput.required = true;
             nameInput.disabled = false;
             
             currentProfilePhoto = currentUser.profilePic || null;
