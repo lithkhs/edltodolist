@@ -105,6 +105,7 @@ let members = [];
 let tasks = [];
 let currentUser = null; // 'supervisor' or member object
 let currentAttachments = []; // Temporary store for current task attachments
+let currentReportAttachments = []; // Temporary store for current report attachments
 let currentMemberPhoto = null; // Base64 profile photo for team member form
 let currentProfilePhoto = null; // Base64 profile photo for profile settings form
 
@@ -813,7 +814,8 @@ function renderSupervisorTasksTable(filteredTasks) {
             reportColumnMarkup = `<div class="t-report" style="font-size: 0.82rem; color: #7e22ce; display: flex; align-items: flex-start; gap: 4px;" title="${task.report}"><i class="fa-solid fa-file-signature" style="margin-top: 3px;"></i> <span>${task.report}</span></div>`;
         }
 
-        let attachmentsColumnMarkup = '<span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">ບໍ່ມີໄຟລ໌ແນບ</span>';
+        // 1. Task Assignment Attachments column markup
+        let attachmentsColumnMarkup = '<span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">ບໍ່ມີໄຟລ໌ມອບວຽກ</span>';
         if (task.attachments && task.attachments.length > 0) {
             attachmentsColumnMarkup = `<div class="table-attachments-display" style="display: flex; flex-direction: column; gap: 6px;">`;
             task.attachments.forEach((file, fileIdx) => {
@@ -826,13 +828,36 @@ function renderSupervisorTasksTable(filteredTasks) {
                 
                 attachmentsColumnMarkup += `
                     <div style="display: inline-flex; align-items: center; background: rgba(15,23,42,0.02); border: 1px solid var(--glass-border); border-radius: 6px; padding: 4px 8px; gap: 6px; max-width: 200px;">
-                        <a href="#" class="table-attachment-link" data-index="${fileIdx}" style="font-size: 0.75rem; color: var(--color-indigo); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;" title="ຄລິກເພື່ອດາວໂຫຼດ: ${file.name} (${file.size})">
+                        <a href="#" class="table-task-attachment-link" data-index="${fileIdx}" style="font-size: 0.75rem; color: var(--color-indigo); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;" title="ຄລິກເພື່ອດາວໂຫຼດ: ${file.name} (${file.size})">
                             <i class="fa-solid ${iconClass}" style="color: ${iconColor};"></i> ${file.name}
                         </a>
                     </div>
                 `;
             });
             attachmentsColumnMarkup += `</div>`;
+        }
+
+        // 2. Report Attachments column markup
+        let reportAttachmentsColumnMarkup = '<span style="color: var(--text-muted); font-size: 0.8rem; font-style: italic;">ບໍ່ມີໄຟລ໌ລາຍງານ</span>';
+        if (task.reportAttachments && task.reportAttachments.length > 0) {
+            reportAttachmentsColumnMarkup = `<div class="table-attachments-display" style="display: flex; flex-direction: column; gap: 6px;">`;
+            task.reportAttachments.forEach((file, fileIdx) => {
+                let iconClass = 'fa-file-lines';
+                let iconColor = '#64748b';
+                if (file.name.endsWith('.pdf')) { iconClass = 'fa-file-pdf'; iconColor = '#ef4444'; }
+                else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) { iconClass = 'fa-file-excel'; iconColor = '#10b981'; }
+                else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) { iconClass = 'fa-file-word'; iconColor = '#3b82f6'; }
+                else if (file.name.endsWith('.png') || file.name.endsWith('.jpg') || file.name.endsWith('.jpeg')) { iconClass = 'fa-file-image'; iconColor = '#a855f7'; }
+                
+                reportAttachmentsColumnMarkup += `
+                    <div style="display: inline-flex; align-items: center; background: rgba(15,23,42,0.02); border: 1px solid var(--glass-border); border-radius: 6px; padding: 4px 8px; gap: 6px; max-width: 200px;">
+                        <a href="#" class="table-report-attachment-link" data-index="${fileIdx}" style="font-size: 0.75rem; color: var(--color-indigo); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;" title="ຄລິກເພື່ອດາວໂຫຼດ: ${file.name} (${file.size})">
+                            <i class="fa-solid ${iconClass}" style="color: ${iconColor};"></i> ${file.name}
+                        </a>
+                    </div>
+                `;
+            });
+            reportAttachmentsColumnMarkup += `</div>`;
         }
 
         const tr = document.createElement('tr');
@@ -846,6 +871,9 @@ function renderSupervisorTasksTable(filteredTasks) {
             </td>
             <td>
                 ${attachmentsColumnMarkup}
+            </td>
+            <td>
+                ${reportAttachmentsColumnMarkup}
             </td>
             <td>
                 <span class="badge badge-dept-${task.deptId}">
@@ -880,10 +908,24 @@ function renderSupervisorTasksTable(filteredTasks) {
 
         // Attach click listeners to table attachments programmatically
         if (task.attachments && task.attachments.length > 0) {
-            const links = tr.querySelectorAll('.table-attachment-link');
+            const links = tr.querySelectorAll('.table-task-attachment-link');
             links.forEach(link => {
                 const fileIdx = parseInt(link.getAttribute('data-index'));
                 const file = task.attachments[fileIdx];
+                if (file) {
+                    link.addEventListener('click', (e) => {
+                        const fallbackUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent('ເນື້ອໃນເອກະສານຈຳລອງສຳລັບ: ' + file.name + '\n\n(ນີ້ແມ່ນໄຟລ໌ຈຳລອງໃນລະບົບ Front-end Demo)');
+                        mockDownload(file.name, e, file.dataUrl || fallbackUrl);
+                    });
+                }
+            });
+        }
+
+        if (task.reportAttachments && task.reportAttachments.length > 0) {
+            const links = tr.querySelectorAll('.table-report-attachment-link');
+            links.forEach(link => {
+                const fileIdx = parseInt(link.getAttribute('data-index'));
+                const file = task.reportAttachments[fileIdx];
                 if (file) {
                     link.addEventListener('click', (e) => {
                         const fallbackUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent('ເນື້ອໃນເອກະສານຈຳລອງສຳລັບ: ' + file.name + '\n\n(ນີ້ແມ່ນໄຟລ໌ຈຳລອງໃນລະບົບ Front-end Demo)');
@@ -1067,6 +1109,7 @@ function createKanbanCard(task, todayStr) {
     let attachmentsMarkup = '';
     if (task.attachments && task.attachments.length > 0) {
         attachmentsMarkup = `<div class="card-attachments-list" style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">`;
+        attachmentsMarkup += `<div style="font-size: 0.65rem; font-weight: bold; opacity: 0.7; color: var(--color-indigo); margin-bottom: 2px;"><i class="fa-solid fa-paperclip"></i> ໄຟລ໌ມອບວຽກ:</div>`;
         task.attachments.forEach((file, fileIdx) => {
             let iconClass = 'fa-file-lines';
             if (file.name.endsWith('.pdf')) iconClass = 'fa-file-pdf';
@@ -1075,7 +1118,7 @@ function createKanbanCard(task, todayStr) {
             else if (file.name.endsWith('.png') || file.name.endsWith('.jpg') || file.name.endsWith('.jpeg')) iconClass = 'fa-file-image';
             
             attachmentsMarkup += `
-                <a href="#" class="card-attachment-link" data-index="${fileIdx}" style="display: block; padding: 4px 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; text-decoration: none;">
+                <a href="#" class="card-task-attachment-link" data-index="${fileIdx}" style="display: block; padding: 4px 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; text-decoration: none;">
                     <span style="display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--color-elec); font-weight: 500;">
                         <i class="fa-solid ${iconClass}"></i> ${file.name}
                     </span>
@@ -1086,6 +1129,31 @@ function createKanbanCard(task, todayStr) {
         attachmentsMarkup += `</div>`;
     }
 
+    let reportAttachmentsMarkup = '';
+    if (task.reportAttachments && task.reportAttachments.length > 0) {
+        reportAttachmentsMarkup = `<div class="card-attachments-list" style="display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">`;
+        reportAttachmentsMarkup += `<div style="font-size: 0.65rem; font-weight: bold; opacity: 0.7; color: #a855f7; margin-bottom: 2px;"><i class="fa-solid fa-paperclip"></i> ໄຟລ໌ລາຍງານ:</div>`;
+        task.reportAttachments.forEach((file, fileIdx) => {
+            let iconClass = 'fa-file-lines';
+            if (file.name.endsWith('.pdf')) iconClass = 'fa-file-pdf';
+            else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) iconClass = 'fa-file-excel';
+            else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) iconClass = 'fa-file-word';
+            else if (file.name.endsWith('.png') || file.name.endsWith('.jpg') || file.name.endsWith('.jpeg')) iconClass = 'fa-file-image';
+            
+            reportAttachmentsMarkup += `
+                <a href="#" class="card-report-attachment-link" data-index="${fileIdx}" style="display: block; padding: 4px 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; text-decoration: none;">
+                    <span style="display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--color-elec); font-weight: 500;">
+                        <i class="fa-solid ${iconClass}"></i> ${file.name}
+                    </span>
+                    ${file.description ? `<span style="font-size: 0.65rem; opacity: 0.75; font-style: italic; display: block; margin-top: 2px; color: #818cf8; padding-left: 14px;">↳ ${file.description}</span>` : ''}
+                </a>
+            `;
+        });
+        reportAttachmentsMarkup += `</div>`;
+    }
+
+    const totalAttachmentsCount = (task.attachments ? task.attachments.length : 0) + (task.reportAttachments ? task.reportAttachments.length : 0);
+
     card.innerHTML = `
         <div class="card-header">
             <div class="card-title">${task.name}</div>
@@ -1095,10 +1163,11 @@ function createKanbanCard(task, todayStr) {
         <div class="card-meta-tags">
             <span class="badge ${deptBadgeClass}">${deptName}</span>
             <span class="badge ${prioBadgeClass}">${prioName}</span>
-            ${task.attachments && task.attachments.length > 0 ? `<span class="card-attachments-summary" title="${task.attachments.length} ເອກະສານແນບ"><i class="fa-solid fa-paperclip"></i> ${task.attachments.length}</span>` : ''}
+            ${totalAttachmentsCount > 0 ? `<span class="card-attachments-summary" title="${totalAttachmentsCount} ເອກະສານແນບ"><i class="fa-solid fa-paperclip"></i> ${totalAttachmentsCount}</span>` : ''}
         </div>
         ${reportMarkup}
         ${attachmentsMarkup}
+        ${reportAttachmentsMarkup}
         <div class="${dateClass}">
             <span>ເລີ່ມ: ${task.start}</span>
             <span class="dl-label">
@@ -1113,10 +1182,24 @@ function createKanbanCard(task, todayStr) {
 
     // Attach click listeners to card attachments programmatically
     if (task.attachments && task.attachments.length > 0) {
-        const links = card.querySelectorAll('.card-attachment-link');
+        const links = card.querySelectorAll('.card-task-attachment-link');
         links.forEach(link => {
             const fileIdx = parseInt(link.getAttribute('data-index'));
             const file = task.attachments[fileIdx];
+            if (file) {
+                link.addEventListener('click', (e) => {
+                    const fallbackUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent('ເນື້ອໃນເອກະສານຈຳລອງສຳລັບ: ' + file.name + '\n\n(ນີ້ແມ່ນໄຟລ໌ຈຳລອງໃນລະບົບ Front-end Demo)');
+                    mockDownload(file.name, e, file.dataUrl || fallbackUrl);
+                });
+            }
+        });
+    }
+
+    if (task.reportAttachments && task.reportAttachments.length > 0) {
+        const links = card.querySelectorAll('.card-report-attachment-link');
+        links.forEach(link => {
+            const fileIdx = parseInt(link.getAttribute('data-index'));
+            const file = task.reportAttachments[fileIdx];
             if (file) {
                 link.addEventListener('click', (e) => {
                     const fallbackUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent('ເນື້ອໃນເອກະສານຈຳລອງສຳລັບ: ' + file.name + '\n\n(ນີ້ແມ່ນໄຟລ໌ຈຳລອງໃນລະບົບ Front-end Demo)');
@@ -1340,7 +1423,10 @@ document.getElementById('btn-create-task').addEventListener('click', () => {
     document.getElementById('modal-task-title').innerText = 'ສ້າງວຽກງານໃໝ່';
     
     currentAttachments = [];
+    currentReportAttachments = [];
     renderModalAttachments();
+    renderModalReportAttachments();
+    document.getElementById('task-assignment-upload-container').style.display = 'block';
 
     // Enable all fields for new task creation
     document.getElementById('task-name-input').disabled = false;
@@ -1354,6 +1440,8 @@ document.getElementById('btn-create-task').addEventListener('click', () => {
     document.getElementById('task-report-input').disabled = false;
     document.getElementById('btn-trigger-file').disabled = false;
     document.getElementById('btn-trigger-camera').disabled = false;
+    document.getElementById('btn-trigger-report-file').disabled = true;
+    document.getElementById('btn-trigger-report-camera').disabled = true;
 
     // Set default dates
     document.getElementById('task-start-input').value = new Date().toISOString().split('T')[0];
@@ -1401,12 +1489,12 @@ document.getElementById('form-task').addEventListener('submit', (e) => {
             const isSupervisor = isUserManagement(currentUser);
             if (isSupervisor) {
                 const oldAssigneeId = tasks[index].assigneeId;
-                tasks[index] = { ...tasks[index], name, desc, deptId, assigneeId, start, deadline, priority, status, report, attachments: currentAttachments };
+                tasks[index] = { ...tasks[index], name, desc, deptId, assigneeId, start, deadline, priority, status, report, attachments: currentAttachments, reportAttachments: currentReportAttachments };
                 if (oldAssigneeId !== assigneeId && assigneeId) {
                     playNotificationSound();
                 }
             } else {
-                tasks[index] = { ...tasks[index], status, report, attachments: currentAttachments };
+                tasks[index] = { ...tasks[index], status, report, reportAttachments: currentReportAttachments };
             }
             showToast("ແກ້ໄຂຂໍ້ມູນວຽກງານສໍາເລັດ", 'success');
         }
@@ -1417,7 +1505,8 @@ document.getElementById('form-task').addEventListener('submit', (e) => {
             id: 't-' + Date.now(),
             name, desc, deptId, assigneeId, start, deadline, priority, status, report,
             creatorId: currentUserId,
-            attachments: currentAttachments
+            attachments: currentAttachments,
+            reportAttachments: currentReportAttachments
         };
         tasks.push(newTask);
         showToast("ເພີ່ມວຽກງານໃໝ່ສໍາເລັດ", 'success');
@@ -1479,18 +1568,24 @@ window.openEditTaskModal = function(taskId) {
     document.getElementById('task-deadline-input').disabled = !canEditCoreFields;
     document.getElementById('task-priority-input').disabled = !canEditCoreFields;
 
-    // Status can also ONLY be edited by the creator/assigner of the task
-    document.getElementById('task-status-input').disabled = !canEditCoreFields;
+    // Status can be edited by the supervisor, creator, or assignee
+    const canEditStatus = isSupervisor || isCreator || isAssignee;
+    document.getElementById('task-status-input').disabled = !canEditStatus;
 
-    // Report and attachments can be edited by the creator OR the assignee
-    const canEditReportAndAttachments = isCreator || isAssignee;
+    // Report and attachments can be edited by the supervisor, creator, or assignee
+    const canEditReportAndAttachments = isSupervisor || isCreator || isAssignee;
     document.getElementById('task-report-input').disabled = !canEditReportAndAttachments;
     document.getElementById('btn-trigger-file').disabled = !canEditReportAndAttachments;
     document.getElementById('btn-trigger-camera').disabled = !canEditReportAndAttachments;
+    document.getElementById('btn-trigger-report-file').disabled = !canEditReportAndAttachments;
+    document.getElementById('btn-trigger-report-camera').disabled = !canEditReportAndAttachments;
 
     // Load and render attachments after setting disabled states
     currentAttachments = task.attachments ? [...task.attachments] : [];
+    currentReportAttachments = task.reportAttachments ? [...task.reportAttachments] : [];
     renderModalAttachments();
+    renderModalReportAttachments();
+    document.getElementById('task-assignment-upload-container').style.display = 'none';
 
     document.getElementById('modal-task-title').innerText = canEditCoreFields ? 'ແກ້ໄຂຂໍ້ມູນວຽກງານ' : 'ລາຍງານຄວາມຄືບໜ້າ & ສະຖານະວຽກງານ';
     openModal('modal-task');
@@ -1501,29 +1596,77 @@ document.getElementById('btn-trigger-file').addEventListener('click', () => {
     document.getElementById('task-file-input').click();
 });
 
-document.getElementById('task-file-input').addEventListener('change', async (e) => {
-    const files = e.target.files;
+// Helper to compress image files before storing as Base64 to save LocalStorage space
+function compressImage(file, maxWidth = 1000, maxHeight = 1000, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+        if (!file.type.startsWith('image/')) {
+            // Non-image files are loaded as normal Data URL
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (err) => reject(err);
+            reader.readAsDataURL(file);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round((width * maxHeight) / height);
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Compress as JPEG with 0.7 quality
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = (err) => reject(err);
+            img.src = event.target.result;
+        };
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
+    });
+}
+
+async function handleTaskFilesUpload(files, successMessage) {
     if (files.length === 0) return;
 
     for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const sizeMB = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
         
         try {
-            const dataUrl = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = (err) => reject(err);
-                reader.readAsDataURL(file);
-            });
+            // Compress image or read file
+            const dataUrl = await compressImage(file);
+            
+            // Calculate actual size of the base64 string
+            const sizeInBytes = Math.round((dataUrl.length * 3) / 4);
+            const sizeFormatted = (sizeInBytes / (1024 * 1024)).toFixed(2) + ' MB';
             
             currentAttachments.push({
                 name: file.name,
-                size: sizeMB,
+                size: sizeFormatted,
                 dataUrl: dataUrl
             });
         } catch (err) {
-            console.error("Error reading file:", err);
+            console.error("Error reading/compressing file:", err);
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
             currentAttachments.push({
                 name: file.name,
                 size: sizeMB
@@ -1531,25 +1674,25 @@ document.getElementById('task-file-input').addEventListener('change', async (e) 
         }
     }
 
-    // Reset input
-    e.target.value = '';
     renderModalAttachments();
-    showToast("ແນບໄຟລ໌ເອກະສານສໍາເລັດ", "success");
+    showToast(successMessage, "success");
+}
+
+document.getElementById('task-file-input').addEventListener('change', async (e) => {
+    await handleTaskFilesUpload(e.target.files, "ແນບໄຟລ໌ເອກະສານສໍາເລັດ");
+    e.target.value = '';
+});
+
+document.getElementById('task-image-input').addEventListener('change', async (e) => {
+    await handleTaskFilesUpload(e.target.files, "ແນບຮູບພາບສໍາເລັດ");
+    e.target.value = '';
 });
 
 function renderModalAttachments() {
     const listContainer = document.getElementById('task-attachments-list');
-    const statusSpan = document.getElementById('file-upload-status');
     
-    if (!listContainer || !statusSpan) return;
+    if (!listContainer) return;
     listContainer.innerHTML = '';
-
-    if (currentAttachments.length === 0) {
-        statusSpan.innerText = 'ຍັງບໍ່ມີໄຟລ໌ແນບ';
-        return;
-    }
-
-    statusSpan.innerText = `ແນບແລ້ວ ${currentAttachments.length} ໄຟລ໌`;
 
     currentAttachments.forEach((file, index) => {
         let iconClass = 'fa-file-lines';
@@ -1609,6 +1752,119 @@ window.deleteAttachment = function(index) {
     renderModalAttachments();
     showToast("ລຶບໄຟລ໌ແນບແລ້ວ", "info");
 };
+
+// Report Attachments rendering and management
+function renderModalReportAttachments() {
+    const listContainer = document.getElementById('report-attachments-list');
+    if (!listContainer) return;
+    listContainer.innerHTML = '';
+
+    currentReportAttachments.forEach((file, index) => {
+        let iconClass = 'fa-file-lines';
+        if (file.name.endsWith('.pdf')) iconClass = 'fa-file-pdf';
+        else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) iconClass = 'fa-file-excel';
+        else if (file.name.endsWith('.docx') || file.name.endsWith('.doc')) iconClass = 'fa-file-word';
+        else if (file.name.endsWith('.png') || file.name.endsWith('.jpg') || file.name.endsWith('.jpeg')) iconClass = 'fa-file-image';
+
+        const item = document.createElement('div');
+        item.className = 'attachment-item';
+        
+        let nameMarkup = `<span class="file-name link-style" style="cursor: pointer; text-decoration: underline; color: var(--color-elec);" title="ຄລິກເພື່ອເບິ່ງ/ດາວໂຫຼດ">${file.name}</span>`;
+
+        const modalReadOnly = document.getElementById('task-report-input').disabled;
+        const deleteButtonHTML = modalReadOnly ? '' : `<button type="button" class="attachment-delete-btn" onclick="deleteReportAttachment(${index})" title="ລຶບໄຟລ໌ແນບ">&times;</button>`;
+        const descInputHTML = `
+            <input type="text" 
+                   class="attachment-desc-input" 
+                   placeholder="ລາຍລະອຽດເອກະສານ..." 
+                   value="${file.description || ''}" 
+                   onchange="updateReportAttachmentDescription(${index}, this.value)" 
+                   ${modalReadOnly ? 'disabled' : ''} 
+                   style="margin-left: 8px; padding: 2px 8px; font-size: 0.72rem; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.15); border-radius: 4px; color: #fff; width: 160px; outline: none;">
+        `;
+
+        item.innerHTML = `
+            <div class="attachment-item-left" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <i class="fa-solid ${iconClass}"></i>
+                ${nameMarkup}
+                <span class="file-size" style="opacity: 0.6; font-size: 0.7rem;">(${file.size})</span>
+                ${descInputHTML}
+            </div>
+            ${deleteButtonHTML}
+        `;
+
+        const fileLink = item.querySelector('.file-name.link-style');
+        if (fileLink) {
+            fileLink.addEventListener('click', (e) => {
+                const fallbackUrl = 'data:text/plain;charset=utf-8,' + encodeURIComponent('ເນື້ອໃນເອກະສານຈຳລອງສຳລັບ: ' + file.name + '\n\n(ນີ້ແມ່ນໄຟລ໌ຈຳລອງໃນລະບົບ Front-end Demo)');
+                mockDownload(file.name, e, file.dataUrl || fallbackUrl);
+            });
+        }
+
+        listContainer.appendChild(item);
+    });
+}
+
+window.updateReportAttachmentDescription = function(index, value) {
+    if (currentReportAttachments[index]) {
+        currentReportAttachments[index].description = value.trim();
+    }
+};
+
+window.deleteReportAttachment = function(index) {
+    currentReportAttachments.splice(index, 1);
+    renderModalReportAttachments();
+    showToast("ລຶບໄຟລ໌ແນບລາຍງານແລ້ວ", "info");
+};
+
+async function handleReportFilesUpload(files, successMessage) {
+    if (files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        try {
+            const dataUrl = await compressImage(file);
+            const sizeInBytes = Math.round((dataUrl.length * 3) / 4);
+            const sizeFormatted = (sizeInBytes / (1024 * 1024)).toFixed(2) + ' MB';
+            
+            currentReportAttachments.push({
+                name: file.name,
+                size: sizeFormatted,
+                dataUrl: dataUrl
+            });
+        } catch (err) {
+            console.error("Error reading/compressing file:", err);
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+            currentReportAttachments.push({
+                name: file.name,
+                size: sizeMB
+            });
+        }
+    }
+
+    renderModalReportAttachments();
+    showToast(successMessage, "success");
+}
+
+// Bind report attachment buttons
+document.getElementById('btn-trigger-report-file').addEventListener('click', () => {
+    document.getElementById('report-file-input').click();
+});
+
+document.getElementById('btn-trigger-report-camera').addEventListener('click', () => {
+    document.getElementById('report-image-input').click();
+});
+
+document.getElementById('report-file-input').addEventListener('change', async (e) => {
+    await handleReportFilesUpload(e.target.files, "ແນບໄຟລ໌ລາຍງານສໍາເລັດ");
+    e.target.value = '';
+});
+
+document.getElementById('report-image-input').addEventListener('change', async (e) => {
+    await handleReportFilesUpload(e.target.files, "ແນບຮູບລາຍງານສໍາເລັດ");
+    e.target.value = '';
+});
 
 window.mockDownload = function(fileName, event, dataUrl) {
     if (event) event.preventDefault();
@@ -1793,8 +2049,7 @@ function capturePhoto() {
 
 // Bind camera buttons
 document.getElementById('btn-trigger-camera').addEventListener('click', () => {
-    openModal('modal-camera');
-    startCamera();
+    document.getElementById('task-image-input').click();
 });
 document.getElementById('btn-close-camera').addEventListener('click', stopCamera);
 document.getElementById('btn-cancel-camera').addEventListener('click', stopCamera);
@@ -2765,6 +3020,53 @@ window.resetSystemToDefaults = function() {
         setTimeout(() => {
             window.location.reload();
         }, 1500);
+    }
+};
+
+// Reset password of a specific employee if they forgot it (without losing other data)
+window.handleForgotPasswordResetSubmit = function(e) {
+    if (e) e.preventDefault();
+    
+    const empId = document.getElementById('reset-emp-id-input').value.trim();
+    const masterPin = document.getElementById('reset-master-pin-input').value.trim();
+    
+    if (masterPin !== 'EDL9999') {
+        showToast("ລະຫັດອະນຸມັດພິເສດ (Master Pin) ບໍ່ຖືກຕ້ອງ!", "error");
+        return;
+    }
+    
+    // Find member by empId (case insensitive)
+    const savedMembers = localStorage.getItem('edl_members');
+    let membersList = [];
+    
+    if (savedMembers) {
+        membersList = JSON.parse(savedMembers);
+    } else {
+        // Fallback to in-memory members
+        membersList = [...members];
+    }
+    
+    let found = false;
+    let memberName = '';
+    
+    const updatedMembers = membersList.map(m => {
+        if (m.empId && m.empId.toLowerCase() === empId.toLowerCase()) {
+            m.password = '1234';
+            memberName = m.name;
+            found = true;
+        }
+        return m;
+    });
+    
+    if (found) {
+        localStorage.setItem('edl_members', JSON.stringify(updatedMembers));
+        members = updatedMembers; // Sync in-memory state
+        
+        showToast(`ຣີເຊັດລະຫັດຜ່ານຂອງ "${memberName}" ເປັນ "1234" ສຳເລັດແລ້ວ!`, "success");
+        closeModal('modal-forgot-password');
+        document.getElementById('form-forgot-password').reset();
+    } else {
+        showToast(`ບໍ່ພົບລະຫັດພະນັກງານ "${empId}" ໃນລະບົບ!`, "error");
     }
 };
 

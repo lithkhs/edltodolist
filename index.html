@@ -55,9 +55,11 @@
                     </button>
                 </form>
                 
-                <div style="text-align: center; margin-top: 16px;">
-                    <button type="button" id="btn-login-guide" class="text-link-btn" style="background: none; border: none; color: var(--color-indigo); cursor: pointer; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; text-decoration: underline; margin: 0 auto;">
+                <div style="text-align: center; margin-top: 16px; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                    <button type="button" id="btn-login-guide" class="text-link-btn" style="background: none; border: none; color: var(--color-indigo); cursor: pointer; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; text-decoration: underline;">
                         <i class="fa-solid fa-circle-question"></i> ຄູ່ມືການນຳໃຊ້ລະບົບ (User Guide)
+                    <button type="button" onclick="openModal('modal-forgot-password')" class="text-link-btn" style="background: none; border: none; color: var(--color-overdue); cursor: pointer; font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; text-decoration: underline; opacity: 0.85;">
+                        <i class="fa-solid fa-key"></i> ລືມລະຫັດຜ່ານ?
                     </button>
                 </div>
             </div>
@@ -221,7 +223,8 @@
                                 <tr>
                                     <th>ຊື່ວຽກງານ</th>
                                     <th>ລາຍງານວຽກ</th>
-                                    <th>ດາວໂຫຼດຟາຍ</th>
+                                    <th>ໄຟລ໌ມອບວຽກ</th>
+                                    <th>ໄຟລ໌ລາຍງານ</th>
                                     <th>ໜ່ວຍງານ</th>
                                     <th>ຜູ້ຮັບຜິດຊອບ</th>
                                     <th>ວັນທີເລີ່ມ - ວັນທີ່ສຳເລັດ</th>
@@ -387,23 +390,45 @@
                     </div>
                 </div>
 
-                <div id="task-report-section">
-                    <div class="form-group">
-                        <label for="task-report-input">ລາຍງານຄວາມຄືບໜ້າ / ຜົນການເຮັດວຽກ (Progress Report)</label>
-                        <textarea id="task-report-input" rows="3" placeholder="ລະບຸລາຍງານຄວາມຄືບໜ້າ ຫຼື ຜົນການເຮັດວຽກທີ່ສໍາເລັດ..."></textarea>
+                <!-- 1. Task Assignment Attachments List -->
+                <div class="form-group">
+                    <label><i class="fa-solid fa-paperclip"></i> ເອກະສານມອບວຽກ (Task Attachments)</label>
+                    <div id="task-attachments-list" class="attachments-list-container" style="margin-top: 6px; display: flex; flex-direction: column; gap: 6px;">
+                        <!-- List of attached files will render here dynamically -->
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label><i class="fa-solid fa-paperclip"></i> ເອກະສານແນບ (Attachments)</label>
+                <!-- 2. Task Assignment Upload Buttons -->
+                <div class="form-group" style="margin-top: 10px;" id="task-assignment-upload-container">
                     <div class="attachment-input-wrapper" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <input type="file" id="task-file-input" style="display: none;" multiple>
-                        <button type="button" class="secondary-btn" id="btn-trigger-file" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-cloud-arrow-up"></i> ແນບໄຟລ໌ເອກະສານ...</button>
-                        <button type="button" class="secondary-btn" id="btn-trigger-camera" style="padding: 8px 16px; font-size: 0.85rem; background: rgba(16, 185, 129, 0.08); color: #10b981; border-color: rgba(16, 185, 129, 0.25);"><i class="fa-solid fa-camera"></i> ຖ່າຍຮູບລາຍງານ...</button>
-                        <span id="file-upload-status" style="font-size: 0.8rem; color: var(--text-muted);">ຍັງບໍ່ມີໄຟລ໌ແນບ</span>
+                        <input type="file" id="task-image-input" style="display: none;" accept="image/*" multiple>
+                        <button type="button" class="secondary-btn" id="btn-trigger-file" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-cloud-arrow-up"></i> ແນບໄຟລ໌ມອບວຽກ...</button>
+                        <button type="button" class="secondary-btn" id="btn-trigger-camera" style="padding: 8px 16px; font-size: 0.85rem; background: rgba(16, 185, 129, 0.08); color: #10b981; border-color: rgba(16, 185, 129, 0.25);"><i class="fa-solid fa-camera"></i> ຖ່າຍ ຫຼື ອັບໂຫຼດຮູບມອບວຽກ...</button>
                     </div>
-                    <div id="task-attachments-list" class="attachments-list-container" style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;">
-                        <!-- List of attached files will render here dynamically -->
+                </div>
+
+                <!-- 3. Progress Report & Report Attachments Section -->
+                <div id="task-report-section">
+                    <div class="form-group" style="border-top: 1px dashed rgba(226, 232, 240, 0.8); padding-top: 15px; margin-top: 15px;">
+                        <label for="task-report-input">ລາຍງານຄວາມຄືບໜ້າ / ຜົນການເຮັດວຽກ (Progress Report)</label>
+                        <textarea id="task-report-input" rows="3" placeholder="ລະບຸລາຍງານຄວາມຄືບໜ້າ ຫຼື ຜົນການເຮັດວຽກທີ່ສໍາເລັດ..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-paperclip"></i> ເອກະສານແນບລາຍງານ (Report Attachments)</label>
+                        <div id="report-attachments-list" class="attachments-list-container" style="margin-top: 6px; display: flex; flex-direction: column; gap: 6px;">
+                            <!-- List of attached report files will render here dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 10px; margin-bottom: 15px;">
+                        <div class="attachment-input-wrapper" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="file" id="report-file-input" style="display: none;" multiple>
+                            <input type="file" id="report-image-input" style="display: none;" accept="image/*" multiple>
+                            <button type="button" class="secondary-btn" id="btn-trigger-report-file" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-cloud-arrow-up"></i> ແນບໄຟລ໌ລາຍງານ...</button>
+                            <button type="button" class="secondary-btn" id="btn-trigger-report-camera" style="padding: 8px 16px; font-size: 0.85rem; background: rgba(16, 185, 129, 0.08); color: #10b981; border-color: rgba(16, 185, 129, 0.25);"><i class="fa-solid fa-camera"></i> ຖ່າຍ ຫຼື ອັບໂຫຼດຮູບລາຍງານ...</button>
+                        </div>
                     </div>
                 </div>
 
@@ -1007,6 +1032,37 @@
                     ເຂົ້າໃຈແລ້ວ
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: FORGOT PASSWORD RESET -->
+    <div id="modal-forgot-password" class="modal-backdrop">
+        <div class="modal-card modal-sm">
+            <div class="modal-header">
+                <h2>ຣີເຊັດລະຫັດຜ່ານ</h2>
+                <button type="button" class="close-modal-btn" data-modal="modal-forgot-password">&times;</button>
+            </div>
+            <form id="form-forgot-password" onsubmit="handleForgotPasswordResetSubmit(event)" class="modal-form">
+                <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.4;">
+                    ລະບົບຈະທຳການຣີເຊັດລະຫັດຜ່ານຂອງພະນັກງານທີ່ລະບຸ ໃຫ້ກັບເປັນຄ່າເລີ່ມຕົ້ນ (<strong style="color: var(--color-indigo);">1234</strong>) ໂດຍບໍ່ມີການລຶບຂໍ້ມູນວຽກງານ ຫຼື ຂໍ້ມູນອື່ນໆ.
+                </p>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="reset-emp-id-input" class="required-field">ລະຫັດພະນັກງານ (Employee ID)</label>
+                    <input type="text" id="reset-emp-id-input" placeholder="ເຊັ່ນ: TN1, EMP-002..." required style="padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); background: var(--bg-secondary); color: var(--text-primary);">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="reset-master-pin-input" class="required-field">ລະຫັດອະນຸມັດພິເສດ (Master Pin)</label>
+                    <input type="password" id="reset-master-pin-input" placeholder="ລະຫັດອະນຸມັດຫຼັກ..." required style="padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); background: var(--bg-secondary); color: var(--text-primary);">
+                    <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">* ລະຫັດອະນຸມັດຫຼັກແມ່ນ: <strong style="color: var(--text-secondary);">EDL9999</strong></span>
+                </div>
+                
+                <div class="modal-actions" style="margin-top: 20px;">
+                    <button type="button" class="secondary-btn" data-modal="modal-forgot-password">ຍົກເລີກ</button>
+                    <button type="submit" class="primary-btn" style="background: var(--color-indigo);">ຢືນຢັນການຣີເຊັດ</button>
+                </div>
+            </form>
         </div>
     </div>
 
