@@ -12,13 +12,25 @@ function isUserAdmin(user) {
     if (!user) return false;
     if (user === 'supervisor') return true;
     if (user.isSupervisor) return true;
-    if (user.deptId === 3) return true; // Anyone in ຫ້ອງການ / ບໍລິຫານ
+    
+    // Anyone in a department with "ຄະນະ" or "ຫ້ອງການ" in its name has full admin/creator rights
+    const deptName = DEPARTMENTS[user.deptId];
+    if (deptName && (deptName.includes('ຄະນະ') || deptName.includes('ຫ້ອງການ'))) {
+        return true;
+    }
+    
+    if (user.deptId === 3) return true; // Fallback
     return false;
 }
 
 function isUserDeptAdmin(user) {
     if (!user || user === 'supervisor') return false;
-    if (user.deptId === 3) return false; // Office is global admin
+    
+    // Global admins (ຄະນະ or ຫ້ອງການ) are not dept admins
+    const deptName = DEPARTMENTS[user.deptId];
+    if (deptName && (deptName.includes('ຄະນະ') || deptName.includes('ຫ້ອງການ'))) return false;
+    if (user.deptId === 3) return false;
+
     const r = user.role ? user.role.toLowerCase() : '';
     return r.includes('ຫົວໜ້າໜ່ວຍງານ') || r.includes('ຮອງຫົວໜ້າໜ່ວຍງານ') || r.includes('ຫົວໜ້າໜ່ວຍ') || r.includes('ຮອງຫົວໜ້າໜ່ວຍ');
 }
@@ -271,7 +283,20 @@ function updateAllDeptDropdowns() {
     const memberDept = document.getElementById('member-dept-input');
 
     if (!filterDept) return;
-    const deptKeys = Object.keys(DEPARTMENTS);
+    const deptKeys = Object.keys(DEPARTMENTS).sort((a, b) => {
+        const nameA = DEPARTMENTS[a] || '';
+        const nameB = DEPARTMENTS[b] || '';
+        const isBranchA = nameA.includes('ຄະນະ');
+        const isBranchB = nameB.includes('ຄະນະ');
+        const isOfficeA = nameA.includes('ຫ້ອງການ');
+        const isOfficeB = nameB.includes('ຫ້ອງການ');
+
+        if (isBranchA && !isBranchB) return -1;
+        if (!isBranchA && isBranchB) return 1;
+        if (isOfficeA && !isOfficeB) return -1;
+        if (!isOfficeA && isOfficeB) return 1;
+        return parseInt(a) - parseInt(b);
+    });
 
     // 1. Dashboard Filter Dropdown
     const savedFilter = filterDept.value || "all";
@@ -707,7 +732,21 @@ function renderTeamProgress() {
     container.innerHTML = '';
 
     // Render group sections for each department dynamically!
-    Object.keys(DEPARTMENTS).forEach(deptKey => {
+    const deptKeys = Object.keys(DEPARTMENTS).sort((a, b) => {
+        const nameA = DEPARTMENTS[a] || '';
+        const nameB = DEPARTMENTS[b] || '';
+        const isBranchA = nameA.includes('ຄະນະ');
+        const isBranchB = nameB.includes('ຄະນະ');
+        const isOfficeA = nameA.includes('ຫ້ອງການ');
+        const isOfficeB = nameB.includes('ຫ້ອງການ');
+
+        if (isBranchA && !isBranchB) return -1;
+        if (!isBranchA && isBranchB) return 1;
+        if (isOfficeA && !isOfficeB) return -1;
+        if (!isOfficeA && isOfficeB) return 1;
+        return parseInt(a) - parseInt(b);
+    });
+    deptKeys.forEach(deptKey => {
         const deptId = parseInt(deptKey);
         const deptName = DEPARTMENTS[deptId];
         const deptMembers = members.filter(m => m.deptId === deptId);
@@ -890,7 +929,7 @@ function renderSupervisorTasksTable(filteredTasks) {
             </td>
             <td>
                 <span class="badge badge-dept-${task.deptId}">
-                    ${task.deptId === 1 ? 'ເຕັກນິກ & ວາງແຜນໄຟຟ້າ' : task.deptId === 3 ? 'ຫ້ອງການ / ບໍລິຫານ' : 'ເຕັກນິກຄວາມປອດໄພ'}
+                    ${DEPARTMENTS[task.deptId] || 'ທົ່ວໄປ'}
                 </span>
             </td>
             <td>
@@ -1027,7 +1066,12 @@ function renderKanbanBoard() {
 function createKanbanCard(task, todayStr) {
     const isUnassigned = (task.assigneeId === "");
     const card = document.createElement('div');
-    card.className = `kanban-card ${task.deptId === 1 ? 'dept-1-card' : 'dept-2-card'}`;
+    let borderClass = 'dept-3-card';
+    const currentDeptName = DEPARTMENTS[task.deptId] || '';
+    if (currentDeptName.includes('ໄຟຟ້າ')) borderClass = 'dept-1-card';
+    else if (currentDeptName.includes('ຄວາມປອດໄພ')) borderClass = 'dept-2-card';
+    
+    card.className = `kanban-card ${borderClass}`;
     card.setAttribute('draggable', isUnassigned ? 'false' : 'true'); // Only draggable if assigned
     card.setAttribute('data-task-id', task.id);
 
@@ -1036,8 +1080,8 @@ function createKanbanCard(task, todayStr) {
     const dateClass = isOverdue ? 'card-dates dl-overdue' : 'card-dates';
 
     // Badges
-    const deptName = task.deptId === 1 ? 'ເຕັກນິກ-ໄຟຟ້າ' : 'ຄວາມປອດໄພ';
-    const deptBadgeClass = task.deptId === 1 ? 'badge-dept-1' : 'badge-dept-2';
+    const deptName = currentDeptName || 'ທົ່ວໄປ';
+    const deptBadgeClass = `badge-dept-${task.deptId}`;
     
     let prioName = 'ກາງ';
     if (task.priority === 'high') prioName = 'ສູງ';
@@ -1953,7 +1997,21 @@ function renderTeamManagementList() {
     document.getElementById('members-count').innerText = members.length;
 
     // Get all active departments
-    Object.keys(DEPARTMENTS).forEach(deptKey => {
+    const deptKeys = Object.keys(DEPARTMENTS).sort((a, b) => {
+        const nameA = DEPARTMENTS[a] || '';
+        const nameB = DEPARTMENTS[b] || '';
+        const isBranchA = nameA.includes('ຄະນະ');
+        const isBranchB = nameB.includes('ຄະນະ');
+        const isOfficeA = nameA.includes('ຫ້ອງການ');
+        const isOfficeB = nameB.includes('ຫ້ອງການ');
+
+        if (isBranchA && !isBranchB) return -1;
+        if (!isBranchA && isBranchB) return 1;
+        if (isOfficeA && !isOfficeB) return -1;
+        if (!isOfficeA && isOfficeB) return 1;
+        return parseInt(a) - parseInt(b);
+    });
+    deptKeys.forEach(deptKey => {
         const deptId = parseInt(deptKey);
         
         // If department admin, only show members of their own department
