@@ -1,0 +1,7 @@
+name = "edl-project"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "edl-db"
+database_id = "c19d7626-2ba9-4016-bae2-0813a56c4279"

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ລະບົບ Todo List & Kanban ທີມງານ - EDL</title>
+    <!-- Google Fonts: Outfit for English/Numbers and Noto Sans Lao for Lao text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=20260821_light">
+</head>
+<body>
+    <!-- Background Animated Blobs for Premium Glassmorphism Look -->
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- 1. SIMULATION LOGIN VIEW -->
+    <section id="login-view" class="view-section active">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo-area">
+                    <i class="fa-solid fa-list-check logo-icon"></i>
+                </div>
+                <h1>ລະບົບຕິດຕາມວຽກງານທີມງານ</h1>
+                <p>Team Task Management & Kanban Board</p>
+            </div>
+            
+            <div class="login-card" style="padding: 30px;">
+                <form id="form-login-direct" onsubmit="handleDirectLoginSubmit(event)" class="modal-form" style="max-width: 100%; margin: 0 auto;">
+                    <h2 style="text-align: center; margin-bottom: 24px; font-size: 1.3rem; color: var(--text-primary);"><i class="fa-solid fa-user-shield"></i> ເຂົ້າສູ່ລະບົບ</h2>
+                    
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label for="login-emp-input" class="required-field" style="text-align: left; display: block; margin-bottom: 8px;"><i class="fa-solid fa-id-card"></i> ລະຫັດພະນັກງານ</label>
+                        <input type="text" id="login-emp-input" placeholder="ປ້ອນລະຫັດພະນັກງານ (ເຊັ່ນ: EMP-002, admin)..." required style="width: 100%; padding: 12px; font-size: 0.95rem; text-align: left;">
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <label for="login-pwd-input" class="required-field" style="text-align: left; display: block; margin-bottom: 8px;"><i class="fa-solid fa-key"></i> ລະຫັດຜ່ານ</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="login-pwd-input" placeholder="ປ້ອນລະຫັດຜ່ານ (ເລີ່ມຕົ້ນແມ່ນ 1234)..." required style="width: 100%; padding: 12px; font-size: 0.95rem; text-align: left;">
+                            <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('login-pwd-input', this)">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="primary-btn" style="width: 100%; padding: 12px; font-size: 1rem; background: var(--color-indigo); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fa-solid fa-right-to-bracket"></i> ເຂົ້າສູ່ລະບົບ
+                    </button>
+                </form>
+                
+
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN APP VIEW (Initially Hidden) -->
+    <section id="app-view" class="view-section">
+        <!-- Navigation Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="app-logo">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>EDL TASKBOARD</span>
+                </div>
+                <div class="view-indicator">
+                    <span id="role-badge" class="badge">ບົດບາດ</span>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="current-user-info">
+                    <div id="user-avatar" class="avatar-sm">U</div>
+                    <div class="user-text">
+                        <span id="user-name">ຊື່ຜູ້ໃຊ້ງານ</span>
+                        <span id="user-dept-name">ໜ່ວຍງານ</span>
+                    </div>
+                </div>
+                <button id="btn-profile-settings" class="icon-btn-text" title="ຕັ້ງຄ່າຂໍ້ມູນສ່ວນຕົວ & ລະຫັດຜ່ານ" style="margin-right: 8px; background: rgba(15, 23, 42, 0.02); border-color: var(--glass-border);">
+                    <i class="fa-solid fa-user-gear"></i> <span>...</span>
+                </button>
+                <button id="btn-logout" class="icon-btn-text" title="ອອກລະບົບ">
+                    <i class="fa-solid fa-right-from-bracket"></i> <span>...</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="app-content">
+            <!-- Tab switcher (Visible to Team Members only, hidden for Supervisor) -->
+            <div id="personal-view-tabs" class="personal-tabs-bar" style="display: none; margin-bottom: 20px; gap: 10px;">
+                <button class="tab-btn active" id="btn-tab-kanban" onclick="switchPersonalTab('kanban')" style="padding: 10px 20px; background: rgba(79, 70, 229, 0.08); border: 1px solid var(--color-indigo); color: var(--color-indigo); border-radius: var(--radius-sm); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-square-poll-vertical"></i> ວຽກສ່ວນຕົວຂອງຂ້ອຍ (My Kanban)
+                </button>
+                <button class="tab-btn" id="btn-tab-dashboard" onclick="switchPersonalTab('dashboard')" style="padding: 10px 20px; background: rgba(15, 23, 42, 0.02); border: 1px solid var(--glass-border); color: var(--text-secondary); border-radius: var(--radius-sm); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-chart-pie"></i> ພາບລວມຂອງທີມງານ (Team Dashboard)
+                </button>
+            </div>
+
+            <!-- 2. SUPERVISOR DASHBOARD VIEW -->
+            <div id="supervisor-dashboard" class="role-view-content">
+                <!-- Dashboard Metrics -->
+                <div class="dashboard-metrics">
+                    <div class="metric-card" data-filter="all">
+                        <div class="metric-icon bg-indigo"><i class="fa-solid fa-clipboard-list"></i></div>
+                        <div class="metric-value" id="stat-total">0</div>
+                        <div class="metric-label">ວຽກງານທັງໝົດ</div>
+                    </div>
+                    <div class="metric-card" data-filter="todo">
+                        <div class="metric-icon bg-sky"><i class="fa-solid fa-hourglass-start"></i></div>
+                        <div class="metric-value" id="stat-todo">0</div>
+                        <div class="metric-label">ຍັງບໍ່ໄດ້ເຮັດ</div>
+                    </div>
+                    <div class="metric-card" data-filter="inprogress">
+                        <div class="metric-icon bg-amber"><i class="fa-solid fa-spinner fa-spin-hover"></i></div>
+                        <div class="metric-value" id="stat-inprogress">0</div>
+                        <div class="metric-label">ກໍາລັງດໍາເນີນການ</div>
+                    </div>
+                    <div class="metric-card" data-filter="done">
+                        <div class="metric-icon bg-emerald"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="metric-value" id="stat-done">0</div>
+                        <div class="metric-label">ສໍາເລັດແລ້ວ</div>
+                    </div>
+                    <div class="metric-card" data-filter="overdue">
+                        <div class="metric-icon bg-rose"><i class="fa-solid fa-circle-exclamation"></i></div>
+                        <div class="metric-value" id="stat-overdue">0</div>
+                        <div class="metric-label">ກາຍກໍານົດ (Overdue)</div>
+                    </div>
+                </div>
+
+                <!-- Team Progress Section (By Department) -->
+                <div class="dashboard-grid">
+                    <div class="dashboard-panel team-progress-panel">
+                        <h2>
+                            <i class="fa-solid fa-chart-line-up"></i> 
+                            ຄວາມຄືບໜ້າການເຮັດວຽກຂອງສະມາຊິກແຕ່ລະໜ່ວຍງານ
+                        </h2>
+                        
+                        <div class="progress-groups">
+                            <!-- Dept 3 Progress -->
+                            <div class="progress-section">
+                                <h3 style="color: #0ea5e9;">
+                                    <i class="fa-solid fa-building"></i> ຫ້ອງການ / ບໍລິຫານ
+                                </h3>
+                                <div id="progress-list-off" class="progress-bar-list">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Dept 1 Progress -->
+                            <div class="progress-section">
+                                <h3 class="electrical-color">
+                                    <i class="fa-solid fa-bolt"></i> ໜ່ວຍງານເຕັກນິກ ແລະ ວາງແຜນລະບົບໄຟຟ້າ
+                                </h3>
+                                <div id="progress-list-elec" class="progress-bar-list">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Dept 2 Progress -->
+                            <div class="progress-section">
+                                <h3 class="safety-color">
+                                    <i class="fa-solid fa-shield-halved"></i> ໜ່ວຍງານເຕັກນິກຄວາມປອດໄພ
+                                </h3>
+                                <div id="progress-list-safe" class="progress-bar-list">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tasks Listing & Controls for Supervisor -->
+                <div class="dashboard-panel tasks-panel">
+                    <div class="panel-header-actions">
+                        <h2><i class="fa-solid fa-tasks"></i> ລາຍການວຽກງານທັງໝົດໃນລະບົບ</h2>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" id="btn-manage-team-login" class="secondary-btn" style="background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.15); color: #818cf8; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-users-gear"></i> ຈັດການສະມາຊິກທີມງານ
+                            </button>
+                            <button type="button" id="btn-create-task" class="primary-btn">
+                                <i class="fa-solid fa-plus"></i> ສ້າງວຽກງານໃໝ່
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filters and Search Bar -->
+                    <div class="filters-bar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="search-task" placeholder="ຄົ້ນຫາຊື່ວຽກ ຫຼື ລາຍລະອຽດ...">
+                        </div>
+                        <div class="filter-dropdowns">
+                            <div class="filter-group">
+                                <label for="filter-dept">ໜ່ວຍງານ:</label>
+                                <select id="filter-dept">
+                                    <option value="all">ທັງໝົດ</option>
+                                    <option value="1">ເຕັກນິກ & ວາງແຜນໄຟຟ້າ</option>
+                                    <option value="2">ເຕັກນິກຄວາມປອດໄພ</option>
+                                    <option value="3">ຫ້ອງການ / ບໍລິຫານ</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-assignee">ຜູ້ຮັບຜິດຊອບ:</label>
+                                <select id="filter-assignee">
+                                    <option value="all">ທັງໝົດ</option>
+                                    <option value="unassigned">ບໍ່ມີຜູ້ຮັບຜິດຊອບ</option>
+                                    <!-- Rendered dynamically -->
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-status">ສະຖານະ:</label>
+                                <select id="filter-status">
+                                    <option value="all">ທັງໝົດ</option>
+                                    <option value="todo">ຕ້ອງເຮັດ (To Do)</option>
+                                    <option value="inprogress">ກໍາລັງເຮັດ (In Progress)</option>
+                                    <option value="done">ສໍາເລັດແລ້ວ (Done)</option>
+                                    <option value="overdue">ກາຍກໍານົດເວລາ</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="filter-priority">ຄວາມສໍາຄັນ:</label>
+                                <select id="filter-priority">
+                                    <option value="all">ທັງໝົດ</option>
+                                    <option value="high">ສູງ</option>
+                                    <option value="medium">ກາງ</option>
+                                    <option value="low">ຕໍ່າ</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Table List -->
+                    <div class="tasks-table-container">
+                        <table class="tasks-table">
+                            <thead>
+                                <tr>
+                                    <th>ຊື່ວຽກງານ</th>
+                                    <th>ລາຍງານວຽກ</th>
+                                    <th>ດາວໂຫຼດຟາຍ</th>
+                                    <th>ໜ່ວຍງານ</th>
+                                    <th>ຜູ້ຮັບຜິດຊອບ</th>
+                                    <th>ວັນທີເລີ່ມ - ວັນທີ່ສຳເລັດ</th>
+                                    <th>ຄວາມສໍາຄັນ</th>
+                                    <th>ສະຖານະ</th>
+                                    <th class="actions-col">ການຈັດການ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supervisor-tasks-tbody">
+                                <!-- Rendered dynamically -->
+                            </tbody>
+                        </table>
+                        <div id="no-tasks-msg" class="empty-state hidden">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <p>ບໍ່ພົບຂໍ້ມູນວຽກງານຕາມເງື່ອນໄຂທີ່ເລືອກ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. PERSONAL KANBAN VIEW -->
+            <div id="personal-kanban" class="role-view-content">
+                <!-- Personal Header Stats & Controls -->
+                <div class="personal-controls-panel">
+                    <div class="personal-intro">
+                        <h2>ຍິນດີຕ້ອນຮັບ, <span id="personal-member-name">ສະມາຊິກ</span></h2>
+                        <p>ໜ່ວຍງານ: <span id="personal-member-dept" class="badge">ໜ່ວຍງານ</span></p>
+                    </div>
+
+                    <div class="personal-actions-row">
+                        <!-- Switch to view all unassigned tasks for my department -->
+                        <label class="custom-switch-label">
+                            <input type="checkbox" id="chk-show-unassigned" class="custom-switch-input">
+                            <span class="custom-switch-slider"></span>
+                            <span class="custom-switch-text"><i class="fa-solid fa-hands-holding-child"></i> ສະແດງວຽກທີ່ຍັງບໍ່ມີຜູ້ຮັບໃນໜ່ວຍງານຂອງຂ້ອຍ</span>
+                        </label>
+                        
+                        <!-- Quick Member Metrics -->
+                        <div class="personal-mini-stats">
+                            <div class="mini-stat"><span id="personal-stat-todo">0</span> ຕ້ອງເຮັດ</div>
+                            <div class="mini-stat"><span id="personal-stat-doing">0</span> ກໍາລັງເຮັດ</div>
+                            <div class="mini-stat"><span id="personal-stat-done">0</span> ສໍາເລັດ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kanban Board Grid -->
+                <div class="kanban-board">
+                    <!-- Column 1: To Do -->
+                    <div class="kanban-column" id="col-todo" data-status="todo">
+                        <div class="kanban-column-header">
+                            <div class="col-title">
+                                <span class="indicator-dot bg-sky"></span>
+                                <h3>ຕ້ອງເຮັດ (To Do)</h3>
+                            </div>
+                            <span class="column-count" id="count-todo">0</span>
+                        </div>
+                        <div class="kanban-cards-container" id="kanban-todo-container">
+                            <!-- Cards rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Column 2: In Progress -->
+                    <div class="kanban-column" id="col-inprogress" data-status="inprogress">
+                        <div class="kanban-column-header">
+                            <div class="col-title">
+                                <span class="indicator-dot bg-amber"></span>
+                                <h3>ກໍາລັງເຮັດ (In Progress)</h3>
+                            </div>
+                            <span class="column-count" id="count-inprogress">0</span>
+                        </div>
+                        <div class="kanban-cards-container" id="kanban-inprogress-container">
+                            <!-- Cards rendered dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Done -->
+                    <div class="kanban-column" id="col-done" data-status="done">
+                        <div class="kanban-column-header">
+                            <div class="col-title">
+                                <span class="indicator-dot bg-emerald"></span>
+                                <h3>ສໍາເລັດແລ້ວ (Done)</h3>
+                            </div>
+                            <span class="column-count" id="count-done">0</span>
+                        </div>
+                        <div class="kanban-cards-container" id="kanban-done-container">
+                            <!-- Cards rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <!-- MODAL 1: TASK FORM (Create / Edit Task) -->
+    <div id="modal-task" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="modal-task-title">ສ້າງວຽກງານໃໝ່</h2>
+                <button type="button" class="close-modal-btn" data-modal="modal-task">&times;</button>
+            </div>
+            <form id="form-task" class="modal-form">
+                <input type="hidden" id="task-id">
+                
+                <div class="form-group">
+                    <label for="task-name-input" class="required-field">ຊື່ວຽກງານ</label>
+                    <input type="text" id="task-name-input" placeholder="ລະບຸຊື່ວຽກງານ..." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="task-desc-input">ລາຍລະອຽດວຽກງານ</label>
+                    <textarea id="task-desc-input" rows="3" placeholder="ລະບຸລາຍລະອຽດ ຫຼື ຂັ້ນຕອນການເຮັດວຽກ..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-dept-input" class="required-field">ໜ່ວຍງານທີ່ຮັບຜິດຊອບ</label>
+                        <select id="task-dept-input" required>
+                            <option value="1">ໜ່ວຍງານເຕັກນິກ ແລະ ວາງແຜນລະບົບໄຟຟ້າ</option>
+                            <option value="2">ໜ່ວຍງານເຕັກນິກຄວາມປອດໄພ</option>
+                            <option value="3">ຫ້ອງການ / ບໍລິຫານ</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-assignee-input">ຜູ້ຮັບຜິດຊອບ</label>
+                        <select id="task-assignee-input">
+                            <option value="">-- ຍັງບໍ່ມອບໝາຍ (Unassigned) --</option>
+                            <!-- Rendered dynamically depending on selected department -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-start-input" class="required-field">ວັນທີເລີ່ມຕົ້ນ</label>
+                        <input type="date" id="task-start-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-deadline-input" class="required-field">ວັນທີ່ສຳເລັດ</label>
+                        <input type="date" id="task-deadline-input" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="task-priority-input" class="required-field">ລະດັບຄວາມສໍາຄັນ</label>
+                        <select id="task-priority-input" required>
+                            <option value="low">ຕໍ່າ (Low)</option>
+                            <option value="medium" selected>ກາງ (Medium)</option>
+                            <option value="high">ສູງ (High)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-status-input" class="required-field">ສະຖານະ</label>
+                        <select id="task-status-input" required>
+                            <option value="todo">ຕ້ອງເຮັດ (To Do)</option>
+                            <option value="inprogress">ກໍາລັງເຮັດ (In Progress)</option>
+                            <option value="done">ສໍາເລັດແລ້ວ (Done)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="task-report-input">ລາຍງານຄວາມຄືບໜ້າ / ຜົນການເຮັດວຽກ (Progress Report)</label>
+                    <textarea id="task-report-input" rows="3" placeholder="ລະບຸລາຍງານຄວາມຄືບໜ້າ ຫຼື ຜົນການເຮັດວຽກທີ່ສໍາເລັດ..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fa-solid fa-paperclip"></i> ເອກະສານແນບ (Attachments)</label>
+                    <div class="attachment-input-wrapper" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="file" id="task-file-input" style="display: none;" multiple>
+                        <button type="button" class="secondary-btn" id="btn-trigger-file" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-cloud-arrow-up"></i> ແນບໄຟລ໌ເອກະສານ...</button>
+                        <button type="button" class="secondary-btn" id="btn-trigger-camera" style="padding: 8px 16px; font-size: 0.85rem; background: rgba(16, 185, 129, 0.08); color: #10b981; border-color: rgba(16, 185, 129, 0.25);"><i class="fa-solid fa-camera"></i> ຖ່າຍຮູບລາຍງານ...</button>
+                        <span id="file-upload-status" style="font-size: 0.8rem; color: var(--text-muted);">ຍັງບໍ່ມີໄຟລ໌ແນບ</span>
+                    </div>
+                    <div id="task-attachments-list" class="attachments-list-container" style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;">
+                        <!-- List of attached files will render here dynamically -->
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" data-modal="modal-task">ຍົກເລີກ</button>
+                    <button type="submit" class="primary-btn">ບັນທຶກຂໍ້ມູນ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: DELEGATE / REASSIGN TASK -->
+    <div id="modal-delegate" class="modal-backdrop">
+        <div class="modal-card modal-sm">
+            <div class="modal-header">
+                <h2>ມອບວຽກງານຕໍ່ / ປ່ຽນຜູ້ຮັບຜິດຊອບ</h2>
+                <button type="button" class="close-modal-btn" data-modal="modal-delegate">&times;</button>
+            </div>
+            <form id="form-delegate" class="modal-form">
+                <input type="hidden" id="delegate-task-id">
+                
+                <div class="delegate-task-info">
+                    <p class="label">ວຽກງານ:</p>
+                    <p id="delegate-task-name" class="value">ຊື່ວຽກງານ</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="delegate-assignee-input">ເລືອກສະມາຊິກເພື່ອມອບວຽກຕໍ່:</label>
+                    <select id="delegate-assignee-input" required>
+                        <option value="">-- ບໍ່ມອບໝາຍ (Unassigned) --</option>
+                        <!-- Grouped and rendered dynamically -->
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" data-modal="modal-delegate">ຍົກເລີກ</button>
+                    <button type="submit" class="primary-btn">ຢືນຢັນການມອບວຽກ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: DOCUMENT PREVIEW (PDF / Image) -->
+    <div id="modal-preview" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 900px; width: 95%; height: 85vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; background: #0b0f19;">
+            <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); flex-shrink: 0;">
+                <h2 id="preview-title" style="margin: 0; font-size: 1.1rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;">ເບິ່ງເອກະສານ</h2>
+                <button type="button" class="close-modal-btn" data-modal="modal-preview">&times;</button>
+            </div>
+            <div id="preview-body" style="flex: 1; display: flex; justify-content: center; align-items: center; overflow: auto; padding: 20px; background: rgba(0,0,0,0.1);">
+                <!-- Injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: TEAM MANAGEMENT (Add / Edit / Remove Members) -->
+    <div id="modal-team" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>ຈັດການສະມາຊິກທີມງານ</h2>
+                <button type="button" class="close-modal-btn" data-modal="modal-team">&times;</button>
+            </div>
+            
+            <div class="team-mgmt-layout">
+                <!-- Left: Form to Add/Edit Member -->
+                <div class="team-form-area">
+                    <h3 id="member-form-title">ເພີ່ມສະມາຊິກໃໝ່</h3>
+                    <form id="form-member" class="modal-form">
+                        <input type="hidden" id="member-id">
+                        
+                        <div class="form-group">
+                            <label for="member-emp-id-input" class="required-field">ລະຫັດພະນັກງານ (Employee ID)</label>
+                            <input type="text" id="member-emp-id-input" placeholder="ເຊັ່ນ: EMP-008..." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="member-name-input" class="required-field">ຊື່ ແລະ ນາມສະກຸນ</label>
+                            <input type="text" id="member-name-input" placeholder="ຊື່ສະມາຊິກ..." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="member-role-input" class="required-field">ຕໍາແໜ່ງ / ບົດບາດ</label>
+                            <input type="text" id="member-role-input" placeholder="ເຊັ່ນ: ວິສະວະກອນ, ຜູ້ກວດກາ..." required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="member-dept-input" class="required-field">ໜ່ວຍງານສັງກັດ</label>
+                            <select id="member-dept-input" required>
+                                <option value="1">ໜ່ວຍງານເຕັກນິກ ແລະ ວາງແຜນລະບົບໄຟຟ້າ</option>
+                                <option value="2">ໜ່ວຍງານເຕັກນິກຄວາມປອດໄພ</option>
+                                <option value="3">ຫ້ອງການ / ບໍລິຫານ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="member-password-input" class="required-field">ລະຫັດຜ່ານ</label>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="member-password-input" placeholder="ລະຫັດຜ່ານ..." value="1234" required style="width: 100%;">
+                                <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('member-password-input', this)">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-image"></i> ຮູບໂປຣໄຟລ໌ (Profile Picture)</label>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <div id="member-avatar-preview" class="avatar-sm" style="width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 1rem; border: 1px solid var(--glass-border); overflow: hidden;">
+                                    <!-- Image or Initials -->
+                                </div>
+                                <input type="file" id="member-photo-input" accept="image/*" style="display: none;">
+                                <button type="button" class="secondary-btn" id="btn-trigger-member-photo" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-upload"></i> ອັບໂຫຼດຮູບ...</button>
+                                <button type="button" class="secondary-btn" id="btn-remove-member-photo" style="padding: 6px 12px; font-size: 0.8rem; display: none; color: var(--color-overdue); border-color: rgba(239, 68, 68, 0.2);"><i class="fa-solid fa-trash"></i> ລຶບ</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="required-field">ເລືອກສີປະຈໍາຕົວ (Avatar Color)</label>
+                            <div class="color-picker-grid">
+                                <label class="color-radio" style="background-color: #6366f1;">
+                                    <input type="radio" name="avatar-color" value="#6366f1" checked>
+                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                </label>
+                                <label class="color-radio" style="background-color: #0ea5e9;">
+                                    <input type="radio" name="avatar-color" value="#0ea5e9">
+                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                </label>
+                                <label class="color-radio" style="background-color: #10b981;">
+                                    <input type="radio" name="avatar-color" value="#10b981">
+                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                </label>
+                                <label class="color-radio" style="background-color: #f59e0b;">
+                                    <input type="radio" name="avatar-color" value="#f59e0b">
+                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                </label>
+                                <label class="color-radio" style="background-color: #ec4899;">
+                                    <input type="radio" name="avatar-color" value="#ec4899">
+                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                </label>
+                                <label class="color-radio" style="background-color: #8b5cf6;">
+                                    <input type="radio" name="avatar-color" value="#8b5cf6">
+                                    <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-actions-stacked">
+                            <button type="submit" id="btn-save-member" class="primary-btn block-btn">ບັນທຶກສະມາຊິກ</button>
+                            <button type="button" id="btn-reset-member-form" class="secondary-btn block-btn hidden">ຍົກເລີກການແກ້ໄຂ</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: List of Existing Members -->
+                <div class="team-list-area">
+                    <h3>ລາຍຊື່ສະມາຊິກທັງໝົດ (<span id="members-count">0</span>)</h3>
+                    <div class="members-scroll-list">
+                        <!-- Grouped by department dynamically -->
+                        <div class="dept-list-section">
+                            <h4 style="color: #0ea5e9;"><i class="fa-solid fa-building"></i> ຫ້ອງການ / ບໍລິຫານ</h4>
+                            <div id="mgmt-members-list-off" class="member-cards-list"></div>
+                        </div>
+                        <div class="dept-list-section">
+                            <h4 class="electrical-color"><i class="fa-solid fa-bolt"></i> ເຕັກນິກ & ວາງແຜນໄຟຟ້າ</h4>
+                            <div id="mgmt-members-list-elec" class="member-cards-list"></div>
+                        </div>
+                        <div class="dept-list-section">
+                            <h4 class="safety-color"><i class="fa-solid fa-shield-halved"></i> ເຕັກນິກຄວາມປອດໄພ</h4>
+                            <div id="mgmt-members-list-safe" class="member-cards-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: CAMERA CAPTURE -->
+    <div id="modal-camera" class="modal-backdrop">
+        <div class="modal-card modal-sm" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2>ຖ່າຍຮູບເພື່ອລາຍງານວຽກ</h2>
+                <button type="button" class="close-modal-btn" data-modal="modal-camera" id="btn-close-camera">&times;</button>
+            </div>
+            <div class="camera-body" style="padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+                <video id="camera-stream" autoplay playsinline style="width: 100%; max-height: 280px; border-radius: var(--radius-sm); border: 2px solid var(--glass-border); background: black; transform: scaleX(-1);"></video>
+                <canvas id="camera-canvas" style="display: none;"></canvas>
+                
+                <div class="camera-actions" style="display: flex; gap: 12px; width: 100%; justify-content: center;">
+                    <button type="button" class="secondary-btn" data-modal="modal-camera" id="btn-cancel-camera">ຍົກເລີກ</button>
+                    <button type="button" class="primary-btn" id="btn-capture-photo" style="background-color: var(--color-indigo);">
+                        <i class="fa-solid fa-circle-dot"></i> ກົດຖ່າຍຮູບ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: PROFILE & PASSWORD SETTINGS -->
+    <div id="modal-profile" class="modal-backdrop">
+        <div class="modal-card modal-sm" style="max-width: 440px;">
+            <div class="modal-header">
+                <h2>ຕັ້ງຄ່າຂໍ້ມູນສ່ວນຕົວ & ລະຫັດຜ່ານ</h2>
+                <button type="button" class="close-modal-btn" data-modal="modal-profile">&times;</button>
+            </div>
+            <form id="form-profile" class="modal-form">
+                <div class="form-group" id="profile-photo-group">
+                    <label><i class="fa-solid fa-image"></i> ຮູບໂປຣໄຟລ໌ (Profile Picture)</label>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <div id="profile-avatar-preview" class="avatar-md" style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 1px solid var(--glass-border); overflow: hidden;">
+                            <!-- Image or Initials -->
+                        </div>
+                        <input type="file" id="profile-photo-input" accept="image/*" style="display: none;">
+                        <button type="button" class="secondary-btn" id="btn-trigger-profile-photo" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-upload"></i> ອັບໂຫຼດຮູບ...</button>
+                        <button type="button" class="secondary-btn" id="btn-remove-profile-photo" style="padding: 6px 12px; font-size: 0.8rem; display: none; color: var(--color-overdue); border-color: rgba(239, 68, 68, 0.2);"><i class="fa-solid fa-trash"></i> ລຶບ</button>
+                    </div>
+                </div>
+
+                <div class="form-group" id="profile-name-group">
+                    <label for="profile-name-input" class="required-field">ຊື່ ແລະ ນາມສະກຸນ</label>
+                    <input type="text" id="profile-name-input" placeholder="ຊື່ຂອງທ່ານ..." required>
+                </div>
+                
+                <div class="form-group" id="profile-role-group">
+                    <label for="profile-role-input" class="required-field">ຕໍາແໜ່ງ</label>
+                    <input type="text" id="profile-role-input" placeholder="ຕໍາແໜ່ງຂອງທ່ານ..." required>
+                </div>
+                
+                <div class="form-group" id="profile-color-group">
+                    <label class="required-field">ເລືອກສີປະຈໍາຕົວ (Avatar Color)</label>
+                    <div class="color-picker-grid">
+                        <label class="color-radio" style="background-color: #6366f1;">
+                            <input type="radio" name="profile-avatar-color" value="#6366f1">
+                            <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                         </label>
+                         <label class="color-radio" style="background-color: #0ea5e9;">
+                            <input type="radio" name="profile-avatar-color" value="#0ea5e9">
+                            <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                         </label>
+                         <label class="color-radio" style="background-color: #10b981;">
+                            <input type="radio" name="profile-avatar-color" value="#10b981">
+                            <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                         </label>
+                         <label class="color-radio" style="background-color: #f59e0b;">
+                            <input type="radio" name="profile-avatar-color" value="#f59e0b">
+                            <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                         </label>
+                         <label class="color-radio" style="background-color: #ec4899;">
+                            <input type="radio" name="profile-avatar-color" value="#ec4899">
+                            <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                         </label>
+                         <label class="color-radio" style="background-color: #8b5cf6;">
+                            <input type="radio" name="profile-avatar-color" value="#8b5cf6">
+                            <span class="checkmark"><i class="fa-solid fa-check"></i></span>
+                         </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="profile-password-input" class="required-field">ລະຫັດຜ່ານໃໝ່</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="profile-password-input" placeholder="ລະຫັດຜ່ານ..." required style="width: 100%;">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('profile-password-input', this)">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" data-modal="modal-profile">ຍົກເລີກ</button>
+                    <button type="submit" class="primary-btn" style="background: var(--color-indigo);">ບັນທຶກການຕັ້ງຄ່າ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Core App Logic -->
+    <script src="app.js?v=20260718"></script>
+</body>
+</html>
