@@ -1299,6 +1299,16 @@ taskDeptSelect.addEventListener('change', () => {
     updateTaskFormAssigneeOptions(parseInt(taskDeptSelect.value), "");
 });
 
+taskAssigneeSelect.addEventListener('change', (e) => {
+    const isCreateMode = !document.getElementById('task-id').value;
+    if (isCreateMode) {
+        document.getElementById('task-report-section').style.display = 'none';
+    } else {
+        const hasAssignee = !!e.target.value;
+        document.getElementById('task-report-section').style.display = hasAssignee ? 'block' : 'none';
+    }
+});
+
 function updateTaskFormAssigneeOptions(deptId, currentAssigneeId) {
     taskAssigneeSelect.innerHTML = '<option value="">-- ຍັງບໍ່ມອບໝາຍ (Unassigned) --</option>';
     
@@ -1312,6 +1322,15 @@ function updateTaskFormAssigneeOptions(deptId, currentAssigneeId) {
         if (m.id === currentAssigneeId) opt.selected = true;
         taskAssigneeSelect.appendChild(opt);
     });
+
+    // Toggle report section based on assignment status and creation mode
+    const isCreateMode = !document.getElementById('task-id').value;
+    if (isCreateMode) {
+        document.getElementById('task-report-section').style.display = 'none';
+    } else {
+        const hasAssignee = !!taskAssigneeSelect.value;
+        document.getElementById('task-report-section').style.display = hasAssignee ? 'block' : 'none';
+    }
 }
 
 // Open create modal
@@ -1333,6 +1352,8 @@ document.getElementById('btn-create-task').addEventListener('click', () => {
     document.getElementById('task-priority-input').disabled = false;
     document.getElementById('task-status-input').disabled = false;
     document.getElementById('task-report-input').disabled = false;
+    document.getElementById('btn-trigger-file').disabled = false;
+    document.getElementById('btn-trigger-camera').disabled = false;
 
     // Set default dates
     document.getElementById('task-start-input').value = new Date().toISOString().split('T')[0];
