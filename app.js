@@ -46,6 +46,44 @@ function getDateOffset(days) {
     return d.toISOString().split('T')[0];
 }
 
+// Play premium synthesized audio notification chime when a task is assigned
+function playNotificationSound() {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        
+        // Play premium double-chime (ding-dong style)
+        const now = ctx.currentTime;
+        
+        // Note 1 (Ding) - High pitch
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(587.33, now); // D5
+        gain1.gain.setValueAtTime(0.12, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.35);
+        
+        // Note 2 (Dong) - Slightly lower pitch, played slightly later
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(659.25, now + 0.1); // E5
+        gain2.gain.setValueAtTime(0.12, now + 0.1);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.1);
+        osc2.stop(now + 0.5);
+    } catch (e) {
+        console.warn("Audio notification blocked or not supported:", e);
+    }
+}
+
 // Default Tasks for initial load
 const DEFAULT_TASKS = [
     {
@@ -1256,7 +1294,11 @@ document.getElementById('form-task').addEventListener('submit', (e) => {
             // Keep existing fields if user is a member (to prevent overwriting disabled inputs)
             const isSupervisor = isUserManagement(currentUser);
             if (isSupervisor) {
+                const oldAssigneeId = tasks[index].assigneeId;
                 tasks[index] = { ...tasks[index], name, desc, deptId, assigneeId, start, deadline, priority, status, report, attachments: currentAttachments };
+                if (oldAssigneeId !== assigneeId && assigneeId) {
+                    playNotificationSound();
+                }
             } else {
                 tasks[index] = { ...tasks[index], status, report, attachments: currentAttachments };
             }
@@ -1273,6 +1315,9 @@ document.getElementById('form-task').addEventListener('submit', (e) => {
         };
         tasks.push(newTask);
         showToast("ເພີ່ມວຽກງານໃໝ່ສໍາເລັດ", 'success');
+        if (assigneeId) {
+            playNotificationSound();
+        }
     }
 
     saveState();
@@ -1748,6 +1793,9 @@ document.getElementById('form-delegate').addEventListener('submit', (e) => {
         }
         
         showToast("ມອບໝາຍວຽກງານໃໝ່ສໍາເລັດ", 'success');
+        if (newAssigneeId) {
+            playNotificationSound();
+        }
     }
 });
 
