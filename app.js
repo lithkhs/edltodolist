@@ -709,6 +709,12 @@ function renderTeamProgress() {
                 const done = memberTasks.filter(t => t.status === 'done').length;
                 const pct = total === 0 ? 0 : Math.round((done / total) * 100);
 
+                const initials = member.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+                const avatarContent = member.profilePic 
+                    ? `<img src="${member.profilePic}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`
+                    : initials;
+                const avatarStyle = member.profilePic ? 'background-color: transparent;' : `background-color: ${member.avatarColor};`;
+
                 const progressItem = document.createElement('div');
                 progressItem.className = `progress-item dept-${member.deptId}-item`;
                 
@@ -726,14 +732,18 @@ function renderTeamProgress() {
                 }
 
                 progressItem.innerHTML = `
-                    <div class="progress-info" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <span class="m-name-tag" style="display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-                            <span>${member.name} <span class="m-stats-tag">(${member.role})</span></span>
-                            ${actionMarkup}
-                        </span>
-                        <span class="pct" style="flex-shrink: 0;">${done}/${total} ວຽກ (${pct}%)</span>
+                    <div class="progress-member-card" style="display: flex; gap: 16px; align-items: center; width: 100%; margin-bottom: 8px;">
+                        <div class="avatar-sm" style="${avatarStyle} width: 72px; height: 72px; font-size: 1.6rem; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; color: white; border-radius: 50%; box-shadow: var(--shadow-sm);">${avatarContent}</div>
+                        <div class="member-details" style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0;">
+                            <div class="member-name-row" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary);">${member.name}</span>
+                                ${actionMarkup}
+                            </div>
+                            <span class="m-stats-tag" style="font-size: 0.8rem; color: var(--text-muted);">${member.role}</span>
+                            <span class="pct" style="font-size: 0.85rem; font-weight: 600; color: var(--color-done);">${done}/${total} ວຽກ (${pct}%)</span>
+                        </div>
                     </div>
-                    <div class="progress-track">
+                    <div class="progress-track" style="margin-top: 8px;">
                         <div class="progress-fill" style="width: ${pct}%"></div>
                     </div>
                 `;
