@@ -108,6 +108,7 @@ let currentAttachments = []; // Temporary store for current task attachments
 let currentReportAttachments = []; // Temporary store for current report attachments
 let currentMemberPhoto = null; // Base64 profile photo for team member form
 let currentProfilePhoto = null; // Base64 profile photo for profile settings form
+let cameraTarget = 'task'; // 'task' or 'report'
 
 // ==========================================================================
 // STATE MANAGEMENT & LOCAL STORAGE
@@ -2027,30 +2028,63 @@ function capturePhoto() {
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
 
-    // Draw mirrored frame matching video display
-    context.translate(canvas.width, 0);
-    context.scale(-1, 1);
+    // Draw frame (not mirrored, ensuring legible text in photo capture)
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Get Base64 data URL
-    const dataUrl = canvas.toDataURL('image/png');
-    const photoName = `photo_${Date.now()}.png`;
+    // Get Base64 data URL (JPEG format with 0.7 compression to save LocalStorage quota)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    const photoName = `photo_${Date.now()}.jpg`;
     
-    currentAttachments.push({
-        name: photoName,
-        size: '180 KB',
-        dataUrl: dataUrl
-    });
+    // Calculate approximate size
+    const sizeInBytes = Math.round((dataUrl.length * 3) / 4);
+    const sizeFormatted = (sizeInBytes / 1024).toFixed(0) + ' KB';
 
-    renderModalAttachments();
+    if (cameraTarget === 'task') {
+        currentAttachments.push({
+            name: photoName,
+            size: sizeFormatted,
+            dataUrl: dataUrl
+        });
+        renderModalAttachments();
+    } else {
+        currentReportAttachments.push({
+            name: photoName,
+            size: sizeFormatted,
+            dataUrl: dataUrl
+        });
+        renderModalReportAttachments();
+    }
+
     stopCamera();
     showToast("ຖ່າຍຮູບ ແລະ ແນບຮູບພາບສໍາເລັດ", "success");
 }
 
 // Bind camera buttons
 document.getElementById('btn-trigger-camera').addEventListener('click', () => {
-    document.getElementById('task-image-input').click();
+    cameraTarget = 'task';
+    openModal('modal-camera');
+    startCamera();
 });
+
+document.getElementById('btn-trigger-report-camera').addEventListener('click', () => {
+    cameraTarget = 'report';
+    openModal('modal-camera');
+    startCamera();
+});
+
+// Handle choosing file from device inside camera modal
+const btnCameraUpload = document.getElementById('btn-camera-upload');
+if (btnCameraUpload) {
+    btnCameraUpload.addEventListener('click', () => {
+        stopCamera();
+        if (cameraTarget === 'task') {
+            document.getElementById('task-image-input').click();
+        } else {
+            document.getElementById('report-image-input').click();
+        }
+    });
+}
+
 document.getElementById('btn-close-camera').addEventListener('click', stopCamera);
 document.getElementById('btn-cancel-camera').addEventListener('click', stopCamera);
 document.getElementById('btn-capture-photo').addEventListener('click', capturePhoto);
